@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<!-- PeerJS：ブラウザ同士の音声通話に使うライブラリ -->
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -17,16 +16,17 @@
   --border:rgba(14,90,140,.10);--border2:rgba(14,90,140,.20);
   --accent:#0077b6;--accent2:rgba(0,119,182,.08);--accent-lt:#00b4d8;
   --online:#00c896;--danger:#e05a4a;--danger-bg:rgba(224,90,74,.08);
-  --room-floor:#eaf5fb;
-  --zone-bg-l:rgba(0,180,216,.04);--zone-bg-r:rgba(0,119,182,.06);
-  --freetalk-bg:rgba(0,180,216,.08);--freetalk-border:rgba(0,180,216,.3);
+  --room-floor:#f5efe6;
+  --zone-bg-l:rgba(0,180,216,.03);--zone-bg-r:rgba(0,119,182,.05);
+  --freetalk-bg:rgba(0,180,216,.07);--freetalk-border:rgba(0,180,216,.35);
+  --wood:#c8a97a;--wood-dark:#a07848;--wood-light:#e0c89a;
 }
 .dark{
   --bg:#071e2e;--bg2:#0a2438;--surface:#0a2438;
   --text:#cce8f8;--text2:#6aaec8;--text3:#2d6a88;
   --border:rgba(0,180,216,.10);--border2:rgba(0,180,216,.20);
   --accent:#00b4d8;--accent2:rgba(0,180,216,.08);--accent-lt:#48cae4;
-  --room-floor:#0d2d40;
+  --room-floor:#1a1208;
   --zone-bg-l:rgba(0,180,216,.05);--zone-bg-r:rgba(0,119,182,.08);
   --freetalk-bg:rgba(0,180,216,.10);--freetalk-border:rgba(0,180,216,.4);
 }
@@ -38,9 +38,9 @@
 @keyframes statusSlide{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
 @keyframes shimmer  {0%{background-position:-200% center}100%{background-position:200% center}}
 @keyframes timerBlink{0%,100%{opacity:1}50%{opacity:.4}}
-@keyframes freetalkPulse{0%,100%{box-shadow:0 0 0 0 rgba(0,180,216,.3)}50%{box-shadow:0 0 12px 4px rgba(0,180,216,.15)}}
 @keyframes sweepLine{0%{transform:scaleX(0);opacity:.7}50%{transform:scaleX(1);opacity:.5}100%{transform:scaleX(0);opacity:0}}
 @keyframes gentleWipe{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+@keyframes freetalkGlow{0%,100%{box-shadow:inset 0 0 0 0 rgba(0,180,216,.1)}50%{box-shadow:inset 0 0 20px 4px rgba(0,180,216,.15)}}
 
 .page-transition{position:fixed;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,transparent,#48cae4,#00b4d8,#48cae4,transparent);transform:scaleX(0);transform-origin:left;z-index:8888;pointer-events:none;}
 .page-transition.run{animation:sweepLine .55s cubic-bezier(.4,0,.2,1) forwards;}
@@ -53,7 +53,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .hdr{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:56px;border-bottom:1px solid var(--border);background:var(--surface);flex-shrink:0;box-shadow:0 1px 12px rgba(0,119,182,.08);}
 .hdr-logo{font-size:20px;font-weight:500;letter-spacing:.06em;background:linear-gradient(90deg,#0077b6,#00b4d8,#48cae4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:200% auto;animation:shimmer 4s linear infinite;}
 .hdr-right{display:flex;align-items:center;gap:10px;}
-.hdr-datetime{font-family:'DM Mono',monospace;font-size:15px;font-weight:400;color:var(--accent);padding:6px 16px;background:var(--accent2);border-radius:8px;border:1px solid var(--border2);line-height:1.5;white-space:nowrap;}
+.hdr-datetime{font-family:'DM Mono',monospace;padding:6px 16px;background:var(--accent2);border-radius:8px;border:1px solid var(--border2);line-height:1.5;white-space:nowrap;}
 .hdr-datetime .dt-date{display:block;font-size:11px;color:var(--text3);letter-spacing:.08em;}
 .hdr-datetime .dt-time{display:block;font-size:18px;color:var(--accent);font-weight:500;}
 .pill-btn{background:transparent;border:1.5px solid var(--border2);border-radius:999px;color:var(--text2);font-size:12px;font-family:inherit;padding:6px 16px;cursor:pointer;letter-spacing:.05em;transition:all .2s;}
@@ -70,7 +70,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .name-input:focus{border-bottom-color:var(--accent);}
 .color-row{display:flex;gap:12px;flex-wrap:wrap;}
 .color-dot{width:28px;height:28px;border-radius:50%;cursor:pointer;border:2.5px solid transparent;transition:transform .18s,box-shadow .18s;flex-shrink:0;}
-.color-dot:hover{transform:scale(1.2);box-shadow:0 2px 8px rgba(0,0,0,.2);}
+.color-dot:hover{transform:scale(1.2);}
 .color-dot.active{outline:2.5px solid var(--accent);outline-offset:3px;}
 .room-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .room-btn{background:transparent;border:1.5px solid var(--border2);border-radius:10px;color:var(--text2);font-size:13px;font-family:inherit;letter-spacing:.07em;padding:18px 12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:9px;transition:all .2s;}
@@ -82,8 +82,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .enter-btn{width:100%;background:linear-gradient(135deg,#0077b6,#00b4d8);color:#fff;border:none;border-radius:10px;font-size:13px;font-family:inherit;font-weight:500;letter-spacing:.18em;text-transform:uppercase;padding:18px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(0,119,182,.3);}
 .enter-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(0,119,182,.4);}
 .enter-btn:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none;}
-
-/* 入室状況 */
 .join-right{width:50%;background:var(--bg2);display:flex;flex-direction:column;overflow:hidden;}
 .preview-hdr{padding:28px 32px 16px;border-bottom:1px solid var(--border);flex-shrink:0;}
 .preview-title{font-size:13px;color:var(--text3);letter-spacing:.14em;text-transform:uppercase;margin-bottom:4px;}
@@ -101,69 +99,82 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .chip{display:flex;align-items:center;gap:7px;background:var(--bg2);border-radius:999px;padding:6px 14px 6px 7px;font-size:13px;color:var(--text2);animation:fadeIn .3s ease;}
 .chip-dot{width:13px;height:13px;border-radius:50%;flex-shrink:0;}
 .empty-msg{font-size:13px;color:var(--text3);font-style:italic;}
-
-/* ゾーンカード（入室画面右側） */
-.zone-cards{display:flex;flex-direction:column;gap:8px;}
 .zone-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;}
 .zone-card-name{font-size:12px;font-weight:500;color:var(--text2);}
 .zone-cap{font-size:11px;color:var(--text3);}
-.zone-bar-wrap{width:80px;height:6px;background:var(--bg3,#d6ecfa);border-radius:3px;overflow:hidden;}
+.zone-bar-wrap{width:80px;height:6px;background:rgba(0,119,182,.1);border-radius:3px;overflow:hidden;}
 .zone-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--accent-lt),var(--accent));transition:width .4s;}
 .zone-full{color:var(--danger);font-size:10px;font-weight:500;}
+.zone-cards{display:flex;flex-direction:column;gap:8px;}
 
 /* 部屋画面 */
 #room-screen{flex:1;display:none;flex-direction:column;}
-.status-bar{padding:14px 28px;min-height:54px;border-bottom:1px solid var(--border);background:var(--surface);font-size:15px;color:var(--text2);letter-spacing:.03em;flex-shrink:0;display:flex;align-items:center;gap:10px;box-shadow:0 1px 8px rgba(0,119,182,.06);}
+.status-bar{padding:14px 28px;min-height:54px;border-bottom:1px solid var(--border);background:var(--surface);font-size:15px;color:var(--text2);flex-shrink:0;display:flex;align-items:center;gap:10px;box-shadow:0 1px 8px rgba(0,119,182,.06);}
 .status-icon{width:18px;height:18px;color:var(--accent-lt);flex-shrink:0;}
 .status-text{animation:statusSlide .3s ease;}
 
+/* キャンバス */
 .room-canvas{position:relative;flex:1;min-height:400px;background:var(--room-floor);overflow:hidden;cursor:crosshair;user-select:none;}
+
+/* エリア背景 */
 .zone-bg-l{position:absolute;top:0;left:0;width:50%;height:100%;background:var(--zone-bg-l);pointer-events:none;z-index:0;}
 .zone-bg-r{position:absolute;top:0;right:0;width:50%;height:100%;background:var(--zone-bg-r);pointer-events:none;z-index:0;}
-.zone-divider{position:absolute;top:0;bottom:0;left:50%;width:2px;background:linear-gradient(180deg,transparent,var(--accent-lt),var(--accent),var(--accent-lt),transparent);pointer-events:none;z-index:3;opacity:.5;}
-.zone-label{position:absolute;top:14px;font-size:11px;letter-spacing:.16em;font-weight:500;color:var(--accent);text-transform:uppercase;pointer-events:none;z-index:4;background:var(--surface);padding:5px 14px;border-radius:999px;border:1px solid var(--border2);box-shadow:0 1px 6px rgba(0,119,182,.1);transform:translateX(-50%);}
+.zone-divider{position:absolute;top:0;bottom:0;left:50%;width:2px;background:linear-gradient(180deg,transparent,var(--accent-lt),var(--accent),var(--accent-lt),transparent);pointer-events:none;z-index:3;opacity:.4;}
+
+/* エリアラベル */
+.zone-label{position:absolute;top:14px;font-size:11px;letter-spacing:.16em;font-weight:500;color:var(--accent);text-transform:uppercase;pointer-events:none;z-index:6;background:var(--surface);padding:5px 14px;border-radius:999px;border:1px solid var(--border2);box-shadow:0 1px 6px rgba(0,119,182,.1);transform:translateX(-50%);}
 .zone-label.l{left:25%;}
 .zone-label.r{left:75%;}
 
-/* ★ フリートークゾーン */
+/* ★ Audio内エリア区切り（ソファゾーン / フリートークゾーン） */
+.audio-divider{position:absolute;left:50%;right:0;pointer-events:none;z-index:3;}
+.audio-divider-line{border-top:1.5px dashed rgba(0,119,182,.25);margin:0 12px;}
+
+/* ★ フリートークゾーン：Audio内下部 */
 .freetalk-zone{
-  position:absolute;bottom:0;right:0;width:50%;
+  position:absolute;left:50%;right:0;bottom:0;
   background:var(--freetalk-bg);
-  border-top:2px dashed var(--freetalk-border);
-  border-left:none;
+  border-top:1.5px dashed var(--freetalk-border);
   pointer-events:none;z-index:2;
   display:flex;align-items:flex-start;justify-content:center;
   padding-top:10px;
 }
-.freetalk-zone.active{animation:freetalkPulse 2s ease-in-out infinite;}
-.freetalk-label{font-size:10px;letter-spacing:.14em;color:var(--accent-lt);text-transform:uppercase;font-weight:500;pointer-events:none;}
-
-/* ★ ソファゾーンのオーバーレイ（定員表示） */
-.sofa-overlay{
-  position:absolute;top:0;left:0;right:0;bottom:0;
-  display:flex;align-items:center;justify-content:center;
-  background:rgba(0,119,182,.06);border-radius:8px;
+.freetalk-zone.active{animation:freetalkGlow 2s ease-in-out infinite;}
+/* ★ フリートークゾーンラベル（絵文字なし） */
+.freetalk-label{
+  font-size:10px;letter-spacing:.14em;
+  color:var(--accent-lt);text-transform:uppercase;font-weight:500;
   pointer-events:none;
+  background:var(--surface);padding:3px 12px;border-radius:999px;
+  border:1px solid var(--freetalk-border);
 }
-.sofa-badge{
-  background:var(--surface);border:1px solid var(--border2);
-  border-radius:999px;padding:2px 10px;
-  font-size:10px;color:var(--accent);letter-spacing:.06em;
-  box-shadow:0 1px 4px rgba(0,119,182,.12);
+
+/* ★ ソファゾーンラベル */
+.sofa-zone-label{
+  position:absolute;top:14px;
+  font-size:10px;letter-spacing:.14em;font-weight:500;
+  color:var(--accent);text-transform:uppercase;pointer-events:none;z-index:5;
+  background:var(--surface);padding:3px 12px;border-radius:999px;
+  border:1px solid var(--border2);
+  transform:translateX(-50%);left:75%;
 }
-.sofa-badge.full{background:var(--danger-bg);color:var(--danger);border-color:rgba(224,90,74,.3);}
 
 .furn{position:absolute;pointer-events:none;z-index:2;}
+.furn-label{position:absolute;font-size:9px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;text-align:center;width:100%;pointer-events:none;}
 
+/* ソファバッジ */
+.sofa-badge-wrap{position:absolute;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5;}
+.sofa-badge{background:var(--surface);border:1px solid var(--border2);border-radius:999px;padding:2px 9px;font-size:10px;color:var(--accent);box-shadow:0 1px 4px rgba(0,119,182,.12);white-space:nowrap;}
+.sofa-badge.full{background:var(--danger-bg);color:var(--danger);border-color:rgba(224,90,74,.3);}
+
+/* アバター */
 .avatar{position:absolute;display:flex;flex-direction:column;align-items:center;gap:5px;z-index:10;pointer-events:none;transition:left .4s cubic-bezier(.25,.8,.25,1),top .4s cubic-bezier(.25,.8,.25,1);}
 .avatar.new-arrival .avatar-circle{animation:avatarPop .45s cubic-bezier(.34,1.56,.64,1) forwards;}
 .avatar-circle{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;color:#fff;flex-shrink:0;box-shadow:0 3px 12px rgba(0,0,0,.2);transition:box-shadow .2s;}
 .avatar-circle.is-me{outline:3px solid var(--accent);outline-offset:3px;box-shadow:0 3px 16px rgba(0,119,182,.35);}
-.avatar-name{font-size:10px;color:var(--text2);letter-spacing:.05em;white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;text-align:center;background:rgba(255,255,255,.85);padding:2px 7px;border-radius:999px;backdrop-filter:blur(4px);}
+.avatar-name{font-size:10px;color:var(--text2);white-space:nowrap;max-width:80px;overflow:hidden;text-overflow:ellipsis;text-align:center;background:rgba(255,255,255,.88);padding:2px 7px;border-radius:999px;backdrop-filter:blur(4px);}
 .mic-badge{width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#00b4d8,#0077b6);display:flex;align-items:center;justify-content:center;margin-top:-8px;flex-shrink:0;box-shadow:0 2px 6px rgba(0,180,216,.5);animation:micPulse 1.5s ease-in-out infinite;}
-
-/* 通話中インジケーター */
-.avatar-call-ring{position:absolute;top:-4px;left:-4px;right:-4px;bottom:-4px;border-radius:50%;border:2px solid var(--online);animation:pulse 1.5s ease-in-out infinite;pointer-events:none;}
+.avatar-call-ring{position:absolute;top:-5px;left:-5px;right:-5px;bottom:-5px;border-radius:50%;border:2px solid var(--online);animation:pulse 1.5s ease-in-out infinite;pointer-events:none;}
 
 /* ツールバー */
 .toolbar{background:var(--surface);border-top:1px solid var(--border);padding:12px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;flex-shrink:0;box-shadow:0 -1px 12px rgba(0,119,182,.06);}
@@ -181,17 +192,18 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .tb-link:hover{color:var(--accent);border-color:var(--accent);background:var(--accent2);}
 .stay-time{font-family:'DM Mono',monospace;font-size:14px;color:var(--text2);letter-spacing:.05em;}
 .divider{width:1.5px;height:20px;background:var(--border2);flex-shrink:0;}
-
-/* インラインタイマー */
 .timer-inline{display:none;align-items:center;gap:8px;background:var(--accent2);border:1.5px solid var(--border2);border-radius:999px;padding:8px 18px;}
 .timer-inline.visible{display:flex;}
 .timer-inline-display{font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--accent);letter-spacing:.06em;min-width:58px;text-align:center;}
 .timer-inline-display.urgent{color:var(--danger);animation:timerBlink .6s infinite;}
-.timer-inline-label{font-size:11px;color:var(--text3);letter-spacing:.08em;}
+.timer-inline-label{font-size:11px;color:var(--text3);}
 .timer-icon-btn{background:transparent;border:1.5px solid var(--border2);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all .18s;flex-shrink:0;}
 .timer-icon-btn:hover{background:var(--accent2);color:var(--accent);border-color:var(--accent);}
 
-/* ★ ゾーン選択ダイアログ */
+/* ★ コピーライトフッター */
+.copyright{background:var(--surface);border-top:1px solid var(--border);padding:8px 24px;text-align:center;font-size:11px;color:var(--text3);letter-spacing:.04em;flex-shrink:0;}
+
+/* ゾーン選択ダイアログ */
 .zone-select-overlay{position:fixed;inset:0;background:rgba(0,20,40,.55);display:flex;align-items:center;justify-content:center;z-index:9000;backdrop-filter:blur(6px);animation:fadeIn .2s ease;}
 .zone-select-box{background:var(--surface);border-radius:18px;padding:32px 36px;width:420px;box-shadow:0 20px 60px rgba(0,119,182,.25);border:1px solid var(--border2);animation:avatarPop .3s cubic-bezier(.34,1.56,.64,1);}
 .zone-select-title{font-size:17px;font-weight:500;color:var(--text);margin-bottom:6px;}
@@ -218,7 +230,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .confirm-btn{flex:1;padding:13px;border-radius:10px;font-size:13px;font-family:inherit;font-weight:500;cursor:pointer;border:none;transition:all .2s;}
 .confirm-btn.cancel{background:var(--bg2);color:var(--text2);}
 .confirm-btn.ok{background:linear-gradient(135deg,#e05a4a,#c0392b);color:#fff;box-shadow:0 4px 12px rgba(224,90,74,.3);}
-.confirm-btn.ok:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(224,90,74,.4);}
+.confirm-btn.ok:hover{transform:translateY(-1px);}
 
 /* ローディング */
 #loading{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;font-size:13px;color:var(--text3);letter-spacing:.1em;z-index:9999;transition:opacity .4s;}
@@ -243,7 +255,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 
 <div id="app">
 <header class="hdr">
-  <span class="hdr-logo">Seaheya / シーヘヤ！</span>
+  <span class="hdr-logo">SeahSeya / シーヘヤ！</span>
   <div class="hdr-right">
     <div class="hdr-datetime">
       <span class="dt-date" id="dtDate">--</span>
@@ -259,7 +271,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   <div class="join-left">
     <div>
       <div class="join-title" data-i18n="welcome">作業部屋へようこそ</div>
-      <div class="join-sub"  data-i18n="welcome-sub">名前と設定を選んで入室してください</div>
+      <div class="join-sub" data-i18n="welcome-sub">名前と設定を選んで入室してください</div>
     </div>
     <div>
       <div class="field-label" data-i18n="your-name">あなたの名前</div>
@@ -284,7 +296,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     </div>
     <button class="enter-btn" id="enterBtn" disabled onclick="joinRoom()" data-i18n="enter">入室する</button>
   </div>
-
   <div class="join-right">
     <div class="preview-hdr">
       <div class="preview-title" data-i18n="current-status">現在の入室状況</div>
@@ -314,7 +325,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
         </div>
         <div class="chips" id="audio-chips"><span class="empty-msg" data-i18n="nobody">現在誰もいません</span></div>
       </div>
-      <!-- ゾーン別状況 -->
       <div class="room-card">
         <div class="room-card-head"><span class="room-card-name" data-i18n="zone-status">ゾーン状況</span></div>
         <div class="zone-cards" id="zoneCards"></div>
@@ -340,107 +350,183 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="zone-label l" data-i18n="silent-area">Silent Area</div>
     <div class="zone-label r" data-i18n="audio-area">Audio Area</div>
 
-    <!-- ★ フリートークゾーン（Audio側下半分） -->
-    <div class="freetalk-zone" id="freetalkZone" style="height:40%;">
-      <span class="freetalk-label">🎙 Free Talk Zone</span>
+    <!-- ★ ソファゾーンラベル（Audio上部中央） -->
+    <div class="sofa-zone-label" id="sofaZoneLabel" data-i18n="sofa-zone">Sofa Zone</div>
+
+    <!-- ★ フリートークゾーン（Audio内下部、高さはJSで制御） -->
+    <div class="freetalk-zone" id="freetalkZone" style="height:38%;">
+      <span class="freetalk-label" data-i18n="freetalk-zone">Free Talk Zone</span>
     </div>
 
-    <!-- Silent側家具 -->
-    <div class="furn" style="left:24px;top:52px;">
-      <svg width="200" height="90" viewBox="0 0 200 90" fill="none">
-        <rect x="4" y="10" width="192" height="14" rx="4" fill="#b2dfdb" stroke="#80cbc4" stroke-width="1.5"/>
-        <rect x="12" y="24" width="10" height="54" rx="3" fill="#a5d6d0" stroke="#80cbc4" stroke-width="1"/>
-        <rect x="178" y="24" width="10" height="54" rx="3" fill="#a5d6d0" stroke="#80cbc4" stroke-width="1"/>
-        <rect x="70" y="0" width="60" height="40" rx="4" fill="#e0f7fa" stroke="#80cbc4" stroke-width="1.5"/>
-        <rect x="95" y="40" width="10" height="10" fill="#b2dfdb"/>
-        <rect x="85" y="50" width="30" height="4" rx="2" fill="#b2dfdb"/>
-        <rect x="75" y="5" width="50" height="30" rx="3" fill="#b2ebf2" opacity=".6"/>
-        <text x="100" y="24" text-anchor="middle" font-size="8" fill="#0077b6" font-family="sans-serif">DESK</text>
-      </svg>
-    </div>
-    <div class="furn" style="left:80px;top:130px;">
-      <svg width="50" height="55" viewBox="0 0 50 55" fill="none">
-        <ellipse cx="25" cy="20" rx="20" ry="10" fill="#80cbc4" stroke="#4db6ac" stroke-width="1.5"/>
-        <rect x="12" y="4" width="26" height="18" rx="6" fill="#b2dfdb" stroke="#80cbc4" stroke-width="1.5"/>
-        <line x1="12" y1="28" x2="6"  y2="52" stroke="#80cbc4" stroke-width="2" stroke-linecap="round"/>
-        <line x1="38" y1="28" x2="44" y2="52" stroke="#80cbc4" stroke-width="2" stroke-linecap="round"/>
-        <line x1="25" y1="30" x2="25" y2="52" stroke="#80cbc4" stroke-width="2" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="furn" style="left:16px;bottom:24px;">
-      <svg width="340" height="70" viewBox="0 0 340 70" fill="none">
-        <rect x="2" y="8" width="336" height="16" rx="5" fill="#b2dfdb" stroke="#80cbc4" stroke-width="1.5"/>
-        <rect x="2" y="24" width="336" height="40" rx="4" fill="#e0f7fa" stroke="#80cbc4" stroke-width="1"/>
-        <line x1="85"  y1="24" x2="85"  y2="64" stroke="#80cbc4" stroke-width="1" stroke-dasharray="2"/>
-        <line x1="170" y1="24" x2="170" y2="64" stroke="#80cbc4" stroke-width="1" stroke-dasharray="2"/>
-        <line x1="255" y1="24" x2="255" y2="64" stroke="#80cbc4" stroke-width="1" stroke-dasharray="2"/>
-        <circle cx="42"  cy="44" r="3" fill="#80cbc4"/>
-        <circle cx="127" cy="44" r="3" fill="#80cbc4"/>
-        <circle cx="212" cy="44" r="3" fill="#80cbc4"/>
-        <circle cx="297" cy="44" r="3" fill="#80cbc4"/>
-        <text x="170" y="18" text-anchor="middle" font-size="7" fill="#0077b6" font-family="sans-serif">COUNTER</text>
-      </svg>
-    </div>
-    <div class="furn" style="left:28px;bottom:88px;"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><ellipse cx="20" cy="12" rx="15" ry="7" fill="#80cbc4" stroke="#4db6ac" stroke-width="1.5"/><line x1="8" y1="18" x2="4" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/><line x1="32" y1="18" x2="36" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/><line x1="20" y1="19" x2="20" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/></svg></div>
-    <div class="furn" style="left:112px;bottom:88px;"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><ellipse cx="20" cy="12" rx="15" ry="7" fill="#80cbc4" stroke="#4db6ac" stroke-width="1.5"/><line x1="8" y1="18" x2="4" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/><line x1="32" y1="18" x2="36" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/><line x1="20" y1="19" x2="20" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/></svg></div>
-    <div class="furn" style="left:196px;bottom:88px;"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><ellipse cx="20" cy="12" rx="15" ry="7" fill="#80cbc4" stroke="#4db6ac" stroke-width="1.5"/><line x1="8" y1="18" x2="4" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/><line x1="32" y1="18" x2="36" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/><line x1="20" y1="19" x2="20" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/></svg></div>
-    <div class="furn" style="left:280px;bottom:88px;"><svg width="40" height="40" viewBox="0 0 40 40" fill="none"><ellipse cx="20" cy="12" rx="15" ry="7" fill="#80cbc4" stroke="#4db6ac" stroke-width="1.5"/><line x1="8" y1="18" x2="4" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/><line x1="32" y1="18" x2="36" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/><line x1="20" y1="19" x2="20" y2="38" stroke="#4db6ac" stroke-width="2" stroke-linecap="round"/></svg></div>
+    <!-- ============================================
+         Silent側 家具（シンプル・参考コードスタイル）
+         ============================================ -->
 
-    <!-- ★ Audio側：ソファブース4つ（2x2グリッド） -->
-    <!-- Sofa A（定員2） -->
-    <div class="furn" id="furn-sofa-a" style="right:180px;top:30px;">
-      <svg width="130" height="100" viewBox="0 0 130 100" fill="none">
-        <rect x="4" y="4" width="122" height="26" rx="7" fill="#90caf9" stroke="#64b5f6" stroke-width="1.5"/>
-        <rect x="4" y="26" width="122" height="38" rx="5" fill="#bbdefb" stroke="#90caf9" stroke-width="1.5"/>
-        <line x1="65" y1="26" x2="65" y2="64" stroke="#90caf9" stroke-width="1.5" stroke-dasharray="3"/>
-        <rect x="0"   y="20" width="10" height="44" rx="4" fill="#90caf9" stroke="#64b5f6" stroke-width="1"/>
-        <rect x="120" y="20" width="10" height="44" rx="4" fill="#90caf9" stroke="#64b5f6" stroke-width="1"/>
-        <rect x="24" y="70" width="82" height="22" rx="4" fill="#e3f2fd" stroke="#90caf9" stroke-width="1.5"/>
-        <text x="65" y="84" text-anchor="middle" font-size="8" fill="#0077b6" font-family="sans-serif" font-weight="bold">SOFA A · 定員2</text>
+    <!-- メインデスク（シンプル板＋脚） -->
+    <div class="furn" style="left:30px;top:52px;width:160px;height:80px;border:none;">
+      <svg viewBox="0 0 160 80" style="width:100%;height:100%;filter:drop-shadow(-8px 8px 12px rgba(0,0,0,0.12));">
+        <!-- 脚 -->
+        <rect x="8"   y="32" width="5" height="42" fill="var(--wood-dark)" rx="1"/>
+        <rect x="147" y="32" width="5" height="42" fill="var(--wood-dark)" rx="1"/>
+        <!-- 天板（斜め俯瞰） -->
+        <path d="M0 18 L150 0 L160 38 L10 56 Z" fill="var(--wood)"/>
+        <path d="M10 56 L160 38 L160 44 L10 62 Z" fill="var(--wood-dark)"/>
       </svg>
-      <div class="sofa-overlay"><div class="sofa-badge" id="badge-sofa-a">0/2</div></div>
+      <span class="furn-label" style="bottom:-18px;">Main Desk</span>
     </div>
-    <!-- Sofa B（定員4） -->
-    <div class="furn" id="furn-sofa-b" style="right:24px;top:30px;">
-      <svg width="140" height="100" viewBox="0 0 140 100" fill="none">
-        <rect x="4" y="4" width="132" height="26" rx="7" fill="#90caf9" stroke="#64b5f6" stroke-width="1.5"/>
-        <rect x="4" y="26" width="132" height="38" rx="5" fill="#bbdefb" stroke="#90caf9" stroke-width="1.5"/>
-        <line x1="46" y1="26" x2="46" y2="64" stroke="#90caf9" stroke-width="1" stroke-dasharray="3"/>
-        <line x1="92" y1="26" x2="92" y2="64" stroke="#90caf9" stroke-width="1" stroke-dasharray="3"/>
-        <rect x="0"   y="20" width="10" height="44" rx="4" fill="#90caf9" stroke="#64b5f6" stroke-width="1"/>
-        <rect x="130" y="20" width="10" height="44" rx="4" fill="#90caf9" stroke="#64b5f6" stroke-width="1"/>
-        <rect x="22" y="70" width="96" height="22" rx="4" fill="#e3f2fd" stroke="#90caf9" stroke-width="1.5"/>
-        <text x="70" y="84" text-anchor="middle" font-size="8" fill="#0077b6" font-family="sans-serif" font-weight="bold">SOFA B · 定員4</text>
+
+    <!-- デスク用チェア（シンプル） -->
+    <div class="furn" style="left:68px;top:130px;width:50px;height:60px;border:none;">
+      <svg viewBox="0 0 50 60" style="width:100%;height:100%;filter:drop-shadow(-4px 4px 6px rgba(0,0,0,0.10));">
+        <!-- 背もたれ -->
+        <path d="M2 4 L46 0 L48 22 L4 26 Z" fill="var(--wood-light)"/>
+        <path d="M4 26 L48 22 L48 26 L4 30 Z" fill="var(--wood-dark)"/>
+        <!-- 座面 -->
+        <path d="M2 30 L46 26 L48 42 L4 46 Z" fill="var(--wood)"/>
+        <path d="M4 46 L48 42 L48 46 L4 50 Z" fill="var(--wood-dark)"/>
+        <!-- 脚 -->
+        <rect x="6"  y="50" width="4" height="10" fill="var(--wood-dark)" rx="1"/>
+        <rect x="40" y="48" width="4" height="10" fill="var(--wood-dark)" rx="1"/>
       </svg>
-      <div class="sofa-overlay"><div class="sofa-badge" id="badge-sofa-b">0/4</div></div>
     </div>
-    <!-- Sofa C（定員4） -->
-    <div class="furn" id="furn-sofa-c" style="right:180px;top:170px;">
-      <svg width="130" height="100" viewBox="0 0 130 100" fill="none">
-        <rect x="4" y="4" width="122" height="26" rx="7" fill="#90caf9" stroke="#64b5f6" stroke-width="1.5"/>
-        <rect x="4" y="26" width="122" height="38" rx="5" fill="#bbdefb" stroke="#90caf9" stroke-width="1.5"/>
-        <line x1="40" y1="26" x2="40" y2="64" stroke="#90caf9" stroke-width="1" stroke-dasharray="3"/>
-        <line x1="80" y1="26" x2="80" y2="64" stroke="#90caf9" stroke-width="1" stroke-dasharray="3"/>
-        <rect x="0"   y="20" width="10" height="44" rx="4" fill="#90caf9" stroke="#64b5f6" stroke-width="1"/>
-        <rect x="120" y="20" width="10" height="44" rx="4" fill="#90caf9" stroke="#64b5f6" stroke-width="1"/>
-        <rect x="20" y="70" width="90" height="22" rx="4" fill="#e3f2fd" stroke="#90caf9" stroke-width="1.5"/>
-        <text x="65" y="84" text-anchor="middle" font-size="8" fill="#0077b6" font-family="sans-serif" font-weight="bold">SOFA C · 定員4</text>
+
+    <!-- カウンター（シンプル・長め） -->
+    <div class="furn" style="left:12px;bottom:32px;width:340px;height:70px;border:none;">
+      <svg viewBox="0 0 340 70" style="width:100%;height:100%;filter:drop-shadow(-6px 6px 10px rgba(0,0,0,0.10));">
+        <!-- 本体 -->
+        <path d="M0 18 L330 0 L340 52 L10 70 Z" fill="var(--wood-light)"/>
+        <path d="M10 70 L340 52 L340 58 L10 76 Z" fill="var(--wood-dark)"/>
+        <!-- 区切り線 -->
+        <line x1="83" y1="14" x2="86" y2="68" stroke="var(--wood-dark)" stroke-width="1" opacity=".5"/>
+        <line x1="168" y1="8" x2="172" y2="64" stroke="var(--wood-dark)" stroke-width="1" opacity=".5"/>
+        <line x1="252" y1="4" x2="256" y2="60" stroke="var(--wood-dark)" stroke-width="1" opacity=".5"/>
+        <!-- ハンドル -->
+        <circle cx="42"  cy="44" r="3" fill="var(--wood-dark)" opacity=".6"/>
+        <circle cx="127" cy="38" r="3" fill="var(--wood-dark)" opacity=".6"/>
+        <circle cx="210" cy="32" r="3" fill="var(--wood-dark)" opacity=".6"/>
+        <circle cx="296" cy="26" r="3" fill="var(--wood-dark)" opacity=".6"/>
       </svg>
-      <div class="sofa-overlay"><div class="sofa-badge" id="badge-sofa-c">0/4</div></div>
+      <span class="furn-label" style="bottom:-16px;left:0;">Counter</span>
     </div>
-    <!-- Sofa D（定員4） -->
-    <div class="furn" id="furn-sofa-d" style="right:24px;top:170px;">
-      <svg width="140" height="100" viewBox="0 0 140 100" fill="none">
-        <rect x="4" y="4" width="132" height="26" rx="7" fill="#90caf9" stroke="#64b5f6" stroke-width="1.5"/>
-        <rect x="4" y="26" width="132" height="38" rx="5" fill="#bbdefb" stroke="#90caf9" stroke-width="1.5"/>
-        <line x1="46" y1="26" x2="46" y2="64" stroke="#90caf9" stroke-width="1" stroke-dasharray="3"/>
-        <line x1="92" y1="26" x2="92" y2="64" stroke="#90caf9" stroke-width="1" stroke-dasharray="3"/>
-        <rect x="0"   y="20" width="10" height="44" rx="4" fill="#90caf9" stroke="#64b5f6" stroke-width="1"/>
-        <rect x="130" y="20" width="10" height="44" rx="4" fill="#90caf9" stroke="#64b5f6" stroke-width="1"/>
-        <rect x="22" y="70" width="96" height="22" rx="4" fill="#e3f2fd" stroke="#90caf9" stroke-width="1.5"/>
-        <text x="70" y="84" text-anchor="middle" font-size="8" fill="#0077b6" font-family="sans-serif" font-weight="bold">SOFA D · 定員4</text>
+
+    <!-- カウンタースツール4つ（シンプル） -->
+    <div class="furn" style="left:20px;bottom:100px;width:38px;height:48px;border:none;">
+      <svg viewBox="0 0 38 48" style="width:100%;height:100%;">
+        <path d="M0 8 L32 0 L38 18 L6 26 Z" fill="var(--wood-light)"/>
+        <rect x="6"  y="26" width="4" height="20" fill="var(--wood-dark)" rx="1"/>
+        <rect x="28" y="22" width="4" height="20" fill="var(--wood-dark)" rx="1"/>
       </svg>
-      <div class="sofa-overlay"><div class="sofa-badge" id="badge-sofa-d">0/4</div></div>
+    </div>
+    <div class="furn" style="left:104px;bottom:100px;width:38px;height:48px;border:none;">
+      <svg viewBox="0 0 38 48" style="width:100%;height:100%;">
+        <path d="M0 8 L32 0 L38 18 L6 26 Z" fill="var(--wood-light)"/>
+        <rect x="6"  y="26" width="4" height="20" fill="var(--wood-dark)" rx="1"/>
+        <rect x="28" y="22" width="4" height="20" fill="var(--wood-dark)" rx="1"/>
+      </svg>
+    </div>
+    <div class="furn" style="left:190px;bottom:100px;width:38px;height:48px;border:none;">
+      <svg viewBox="0 0 38 48" style="width:100%;height:100%;">
+        <path d="M0 8 L32 0 L38 18 L6 26 Z" fill="var(--wood-light)"/>
+        <rect x="6"  y="26" width="4" height="20" fill="var(--wood-dark)" rx="1"/>
+        <rect x="28" y="22" width="4" height="20" fill="var(--wood-dark)" rx="1"/>
+      </svg>
+    </div>
+    <div class="furn" style="left:276px;bottom:100px;width:38px;height:48px;border:none;">
+      <svg viewBox="0 0 38 48" style="width:100%;height:100%;">
+        <path d="M0 8 L32 0 L38 18 L6 26 Z" fill="var(--wood-light)"/>
+        <rect x="6"  y="26" width="4" height="20" fill="var(--wood-dark)" rx="1"/>
+        <rect x="28" y="22" width="4" height="20" fill="var(--wood-dark)" rx="1"/>
+      </svg>
+    </div>
+
+    <!-- ★ 観葉植物（Silent側・左） -->
+    <div class="furn" style="left:8px;top:220px;width:44px;height:80px;border:none;">
+      <svg viewBox="0 0 44 80" style="width:100%;height:100%;">
+        <!-- 鉢 -->
+        <path d="M10 58 L34 58 L30 76 L14 76 Z" fill="#c4a882" stroke="#a89068" stroke-width="1"/>
+        <path d="M10 54 L34 54 L34 58 L10 58 Z" fill="#d4b892" stroke="#a89068" stroke-width="1"/>
+        <!-- 土 -->
+        <ellipse cx="22" cy="54" rx="12" ry="4" fill="#8b6340" opacity=".6"/>
+        <!-- 茎 -->
+        <line x1="22" y1="54" x2="22" y2="24" stroke="#6a9a50" stroke-width="2" stroke-linecap="round"/>
+        <!-- 葉（大） -->
+        <path d="M22 38 Q4 24 6 10 Q18 20 22 38Z" fill="#6aaa48" opacity=".9"/>
+        <path d="M22 38 Q40 24 38 10 Q26 20 22 38Z" fill="#5a9a40" opacity=".9"/>
+        <path d="M22 28 Q8 16 12 4 Q20 14 22 28Z" fill="#7aba58" opacity=".8"/>
+        <path d="M22 28 Q36 16 32 4 Q24 14 22 28Z" fill="#6aaa48" opacity=".8"/>
+      </svg>
+    </div>
+
+    <!-- ★ 観葉植物（Silent側・右） -->
+    <div class="furn" style="left:360px;top:60px;width:40px;height:72px;border:none;">
+      <svg viewBox="0 0 40 72" style="width:100%;height:100%;">
+        <!-- 細長い鉢 -->
+        <path d="M10 50 L30 50 L27 68 L13 68 Z" fill="#b4987a" stroke="#9a7a60" stroke-width="1"/>
+        <path d="M9 46 L31 46 L31 50 L9 50 Z" fill="#c4a882" stroke="#9a7a60" stroke-width="1"/>
+        <ellipse cx="20" cy="46" rx="11" ry="4" fill="#7a5030" opacity=".5"/>
+        <!-- 細い茎 -->
+        <line x1="20" y1="46" x2="18" y2="10" stroke="#5a8a38" stroke-width="1.5" stroke-linecap="round"/>
+        <!-- 長い葉 -->
+        <path d="M18 28 Q0 20 2 6 Q14 16 18 28Z" fill="#5aaa38" opacity=".85"/>
+        <path d="M18 28 Q36 18 34 4 Q22 14 18 28Z" fill="#4a9a30" opacity=".85"/>
+        <path d="M18 18 Q4 10 6 0 Q16 8 18 18Z" fill="#6aba48" opacity=".75"/>
+      </svg>
+    </div>
+
+    <!-- ============================================
+         Audio側 ソファ4つ（JSで等間隔配置）
+         ============================================ -->
+    <!-- ソファはJSで動的に配置するのでHTMLは空コンテナ -->
+    <div id="sofaContainer" style="position:absolute;top:0;left:50%;right:0;bottom:38%;pointer-events:none;z-index:2;"></div>
+
+    <!-- ソファバッジ（定員表示） -->
+    <div id="sofaBadgeContainer" style="position:absolute;top:0;left:50%;right:0;bottom:38%;pointer-events:none;z-index:5;"></div>
+
+    <!-- フリートークゾーン内：3Dラウンドテーブル -->
+    <div class="furn" id="freetalkTable" style="right:80px;bottom:60px;">
+      <svg width="110" height="80" viewBox="0 0 110 80" fill="none">
+        <!-- テーブル天板上面（楕円） -->
+        <ellipse cx="55" cy="28" rx="50" ry="26" fill="#d4a96a" stroke="#b8875a" stroke-width="1.2"/>
+        <!-- 天板側面（3D） -->
+        <path d="M5 28 Q5 54 55 54 Q105 54 105 28 L105 34 Q105 60 55 60 Q5 60 5 34 Z" fill="#c49060" stroke="#b8875a" stroke-width="1"/>
+        <!-- 脚柱 -->
+        <rect x="48" y="54" width="14" height="18" rx="3" fill="#b8875a" stroke="#a07848" stroke-width="1"/>
+        <!-- 底面 -->
+        <path d="M36 68 L74 68 L78 72 L32 72 Z" fill="#c49060" stroke="#b8875a" stroke-width="1"/>
+        <!-- ティーカップ -->
+        <ellipse cx="38" cy="24" rx="8" ry="5" fill="#f0f0ec" stroke="#d4cfc8" stroke-width="1"/>
+        <path d="M30 24 Q30 30 38 30 Q46 30 46 24" fill="#f0f0ec" stroke="#d4cfc8" stroke-width="1"/>
+        <ellipse cx="72" cy="24" rx="8" ry="5" fill="#f0f0ec" stroke="#d4cfc8" stroke-width="1"/>
+        <path d="M64 24 Q64 30 72 30 Q80 30 80 24" fill="#f0f0ec" stroke="#d4cfc8" stroke-width="1"/>
+      </svg>
+    </div>
+
+    <!-- フリートーク用チェア（ラウンドテーブル周り） -->
+    <div class="furn" id="ftChair1" style="right:158px;bottom:56px;">
+      <svg width="44" height="54" viewBox="0 0 44 54" fill="none">
+        <path d="M4 8 L40 8 L40 14 L4 14 Z" fill="#d4a96a" stroke="#b8875a" stroke-width="1"/>
+        <path d="M4 14 L40 14 L40 28 L4 28 Z" fill="#e8ddd0" stroke="#c4b09a" stroke-width="1"/>
+        <path d="M40 8 L44 6 L44 26 L40 28 Z" fill="#c4b09a" stroke="#b09060" stroke-width="1"/>
+        <path d="M2 28 L42 28 L42 34 L2 34 Z" fill="#d4a96a" stroke="#b8875a" stroke-width="1"/>
+        <path d="M2 34 L42 34 L42 38 L2 38 Z" fill="#e8ddd0" stroke="#c4b09a" stroke-width="1"/>
+        <line x1="8"  y1="38" x2="5"  y2="52" stroke="#c49060" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="36" y1="38" x2="39" y2="52" stroke="#c49060" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="12" y1="38" x2="11" y2="52" stroke="#c49060" stroke-width="2" stroke-linecap="round"/>
+        <line x1="32" y1="38" x2="33" y2="52" stroke="#c49060" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div class="furn" id="ftChair2" style="right:22px;bottom:56px;">
+      <svg width="44" height="54" viewBox="0 0 44 54" fill="none">
+        <path d="M4 8 L40 8 L40 14 L4 14 Z" fill="#d4a96a" stroke="#b8875a" stroke-width="1"/>
+        <path d="M4 14 L40 14 L40 28 L4 28 Z" fill="#e8ddd0" stroke="#c4b09a" stroke-width="1"/>
+        <path d="M40 8 L44 6 L44 26 L40 28 Z" fill="#c4b09a" stroke="#b09060" stroke-width="1"/>
+        <path d="M2 28 L42 28 L42 34 L2 34 Z" fill="#d4a96a" stroke="#b8875a" stroke-width="1"/>
+        <path d="M2 34 L42 34 L42 38 L2 38 Z" fill="#e8ddd0" stroke="#c4b09a" stroke-width="1"/>
+        <line x1="8"  y1="38" x2="5"  y2="52" stroke="#c49060" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="36" y1="38" x2="39" y2="52" stroke="#c49060" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="12" y1="38" x2="11" y2="52" stroke="#c49060" stroke-width="2" stroke-linecap="round"/>
+        <line x1="32" y1="38" x2="33" y2="52" stroke="#c49060" stroke-width="2" stroke-linecap="round"/>
+      </svg>
     </div>
 
   </div><!-- /room-canvas -->
@@ -494,39 +580,33 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
       </button>
     </div>
   </div>
+
+  <!-- ★ コピーライト -->
+  <div class="copyright">Copyright &copy; 2026 Seaheya. All rights reserved. Made with Claude.</div>
 </div>
-</div><!-- /#app -->
+</div>
 
 <script>
 'use strict';
+const SUPABASE_URL='https://xfwbuldrqywdeshmctkk.supabase.co';
+const SUPABASE_KEY='sb_publishable_TbDM-zZhwaIRDJm9yEsriw_FdS3YETI';
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 
-/* ============================================
-   Supabase
-   ============================================ */
-const SUPABASE_URL = 'https://xfwbuldrqywdeshmctkk.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_TbDM-zZhwaIRDJm9yEsriw_FdS3YETI';
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-  realtime:{params:{eventsPerSecond:10}}
-});
-
-/* ============================================
-   多言語
-   ============================================ */
-const I18N = {
+const I18N={
   ja:{
     'welcome':'作業部屋へようこそ','welcome-sub':'名前と設定を選んで入室してください',
     'your-name':'あなたの名前','name-ph':'名前を入力','icon-color':'アイコンカラー',
     'room-type':'部屋タイプ','silent-sub':'集中・無音','audio-sub':'通話あり','enter':'入室する',
     'current-status':'現在の入室状況','working-now':'人が作業中','people':'人','nobody':'現在誰もいません',
     'silent-area':'Silent Area','audio-area':'Audio Area','zone-status':'ゾーン状況',
+    'sofa-zone':'Sofa Zone','freetalk-zone':'Free Talk Zone',
     'mic-on':'マイクをオンにする','mic-off-label':'マイクをオフにする',
     'timer5':'5分','timer10':'10分','leave':'退出する',
     'night-mode':'Night Mode','day-mode':'Day Mode',
     'leave-title':'退出しますか？','leave-sub':'退出すると他のユーザーの画面からも\nあなたのアバターが消えます。',
     'leave-cancel':'キャンセル','leave-ok':'退出する',
     'timer-done':'タイマー終了！','timer-paused':'一時停止中',
-    'zone-select-title':'ゾーンを選んでください',
-    'zone-select-sub':'Audio エリアのどこに移動しますか？',
+    'zone-select-title':'ゾーンを選んでください','zone-select-sub':'Audio エリアのどこに移動しますか？',
     'zone-full':'満員','zone-cancel':'キャンセル',
     'call-connected':'通話が繋がりました','call-ended':'通話が終了しました',
   },
@@ -536,6 +616,7 @@ const I18N = {
     'room-type':'Room Type','silent-sub':'Focus · Quiet','audio-sub':'With Voice','enter':'Enter Room',
     'current-status':'Current Status','working-now':'working now','people':'','nobody':'Nobody here yet',
     'silent-area':'Silent Area','audio-area':'Audio Area','zone-status':'Zone Status',
+    'sofa-zone':'Sofa Zone','freetalk-zone':'Free Talk Zone',
     'mic-on':'Turn Mic On','mic-off-label':'Turn Mic Off',
     'timer5':'5 min','timer10':'10 min','leave':'Leave',
     'night-mode':'Night Mode','day-mode':'Day Mode',
@@ -548,44 +629,105 @@ const I18N = {
   }
 };
 
-/* ============================================
-   定数
-   ============================================ */
-const COLORS=[
-  {hex:'#0077b6'},{hex:'#00b4d8'},{hex:'#1a7f4b'},
-  {hex:'#e05a4a'},{hex:'#7c3aed'},{hex:'#d97706'},{hex:'#2d6a4f'},
-];
-
-// ゾーン定義
-const ZONES = {
-  'sofa-a':   {label:'Sofa A',  capacity:2,  pos:{right:180,top:30}},
-  'sofa-b':   {label:'Sofa B',  capacity:4,  pos:{right:24, top:30}},
-  'sofa-c':   {label:'Sofa C',  capacity:4,  pos:{right:180,top:170}},
-  'sofa-d':   {label:'Sofa D',  capacity:4,  pos:{right:24, top:170}},
-  'freetalk': {label:'Free Talk Zone', capacity:999, pos:null},
+const COLORS=[{hex:'#0077b6'},{hex:'#00b4d8'},{hex:'#1a7f4b'},{hex:'#e05a4a'},{hex:'#7c3aed'},{hex:'#d97706'},{hex:'#2d6a4f'}];
+const ZONES={
+  'sofa-a':{label:'Sofa A',capacity:2},
+  'sofa-b':{label:'Sofa B',capacity:4},
+  'sofa-c':{label:'Sofa C',capacity:4},
+  'sofa-d':{label:'Sofa D',capacity:4},
+  'freetalk':{label:'Free Talk Zone',capacity:15},
 };
 
-/* ============================================
-   状態
-   ============================================ */
-const state = {
-  lang:'ja', mode:'light', room:'silent', name:'', color:COLORS[0].hex,
-  myId:null, isMuted:true, startTime:null,
-  stayTimer:null, heartbeatTimer:null, cleanupTimer:null, datetimeTimer:null,
-  timerInterval:null, timerRemaining:0, timerPaused:false, timerMinutes:0,
-  users:[], zones:{},
-  // PeerJS
-  peer:null,         // PeerJSインスタンス
-  myPeerId:null,     // 自分のPeerID
-  myZone:null,       // 自分が今いるゾーン（'sofa-a'〜'sofa-d','freetalk',null）
-  activeCalls:{},    // 通話中のコール {peerId: call}
-  localStream:null,  // 自分のマイクストリーム
+const state={
+  lang:'ja',mode:'light',room:'silent',name:'',color:COLORS[0].hex,
+  myId:null,isMuted:true,startTime:null,
+  stayTimer:null,heartbeatTimer:null,cleanupTimer:null,datetimeTimer:null,
+  timerInterval:null,timerRemaining:0,timerPaused:false,timerMinutes:0,
+  users:[],zones:{},
+  peer:null,myPeerId:null,myZone:null,activeCalls:{},localStream:null,
 };
 
-const el  = id => document.getElementById(id);
-const t   = key => (I18N[state.lang]||{})[key] || key;
-const MIC_NORMAL = `<rect x="5.5" y="1" width="7" height="10" rx="3.5"/><path d="M2 9a7 7 0 0014 0M9 16v2M6 18h6"/>`;
-const MIC_MUTED  = `<rect x="5.5" y="1" width="7" height="10" rx="3.5" opacity=".4"/><path d="M2 9a7 7 0 0014 0M9 16v2M6 18h6" opacity=".4"/><line x1="2" y1="2" x2="16" y2="16" stroke-width="1.8" stroke-linecap="round"/>`;
+const el=id=>document.getElementById(id);
+const t=key=>(I18N[state.lang]||{})[key]||key;
+const MIC_NORMAL=`<rect x="5.5" y="1" width="7" height="10" rx="3.5"/><path d="M2 9a7 7 0 0014 0M9 16v2M6 18h6"/>`;
+const MIC_MUTED=`<rect x="5.5" y="1" width="7" height="10" rx="3.5" opacity=".4"/><path d="M2 9a7 7 0 0014 0M9 16v2M6 18h6" opacity=".4"/><line x1="2" y1="2" x2="16" y2="16" stroke-width="1.8" stroke-linecap="round"/>`;
+
+/* ============================================
+   ★ ソファSVG生成（参考コードスタイル・シンプル斜め俯瞰）
+   ============================================ */
+function sofaSVG(label, capacity) {
+  const w=160, h=120;
+  return `<svg viewBox="0 0 ${w} ${h}" style="width:${w}px;height:${h}px;filter:drop-shadow(-12px 12px 20px rgba(0,0,0,0.13));" fill="none">
+    <!-- 脚4本 -->
+    <rect x="32" y="82" width="5" height="14" rx="1" fill="#d2b48c"/>
+    <rect x="128" y="66" width="5" height="14" rx="1" fill="#d2b48c"/>
+    <rect x="145" y="85" width="5" height="14" rx="1" fill="#d2b48c"/>
+    <rect x="18"  y="96" width="5" height="14" rx="1" fill="#d2b48c"/>
+    <!-- 座面（俯瞰）-->
+    <path d="M28 78 L140 58 L152 88 L40 108 Z" fill="#eaddca"/>
+    <path d="M28 72 L140 52 L152 82 L40 102 Z" fill="#f5f0e8"/>
+    <path d="M40 102 L152 82 L152 88 L40 108 Z" fill="#d4c8b0"/>
+    <!-- 背もたれ -->
+    <path d="M28 32 L140 12 L140 52 L28 72 Z" fill="#ffffff"/>
+    <path d="M28 32 L40 40 L40 80 L28 72 Z" fill="#e8e0d4"/>
+    <path d="M28 32 L140 12 L140 16 L28 36 Z" fill="#f0ece4"/>
+    <!-- ラベル -->
+    <text x="${w/2-10}" y="118" text-anchor="middle" font-size="8" fill="#8a7060" font-family="sans-serif" font-weight="500">${label} · ${capacity}人</text>
+  </svg>`;
+}
+
+/* ★ ソファ4つをAudioエリア上部に等間隔配置（JSで動的にレイアウト） */
+function layoutSofas() {
+  const canvas = el('roomCanvas');
+  const container = el('sofaContainer');
+  const badgeContainer = el('sofaBadgeContainer');
+  if (!canvas || !container) return;
+
+  const canvasW = canvas.offsetWidth;
+  const audioW = canvasW / 2; // Audio側の幅
+  const sofaW = 160, sofaH = 120;
+  const rows = 2, cols = 2;
+  const paddingX = 20, paddingY = 44;
+
+  // 等間隔計算
+  const totalW = audioW - paddingX * 2;
+  const gapX = (totalW - sofaW * cols) / (cols + 1);
+  const gapY = 20;
+
+  container.innerHTML = '';
+  badgeContainer.innerHTML = '';
+
+  const sofaList = [
+    {id:'sofa-a', label:'Sofa A', capacity:2},
+    {id:'sofa-b', label:'Sofa B', capacity:4},
+    {id:'sofa-c', label:'Sofa C', capacity:4},
+    {id:'sofa-d', label:'Sofa D', capacity:4},
+  ];
+
+  sofaList.forEach((s, i) => {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+    const x = paddingX + gapX + col * (sofaW + gapX);
+    const y = paddingY + row * (sofaH + gapY);
+
+    // ソファ
+    const div = document.createElement('div');
+    div.id = 'furn-' + s.id;
+    div.style.cssText = `position:absolute;left:${x}px;top:${y}px;pointer-events:none;z-index:2;`;
+    div.innerHTML = sofaSVG(s.label, s.capacity);
+    container.appendChild(div);
+
+    // バッジ（定員表示）
+    const badge = document.createElement('div');
+    badge.id = 'badge-' + s.id;
+    badge.className = 'sofa-badge-wrap';
+    badge.style.cssText = `position:absolute;left:${x}px;top:${y + sofaH + 4}px;width:${sofaW}px;`;
+    const z = state.zones[s.id] || {current:0, capacity:s.capacity};
+    const full = z.current >= s.capacity;
+    badge.innerHTML = `<div class="sofa-badge${full?' full':''}">${z.current}/${s.capacity}</div>`;
+    badgeContainer.appendChild(badge);
+  });
+}
 
 /* ============================================
    初期化
@@ -603,556 +745,261 @@ async function init() {
   updateDatetime();
   applyI18n();
   el('loading').classList.add('hidden');
+  // ウィンドウリサイズでソファを再配置
+  window.addEventListener('resize', layoutSofas);
 }
 
 function updateDatetime() {
-  const now=new Date(), loc=state.lang==='ja'?'ja-JP':'en-US';
+  const now=new Date(),loc=state.lang==='ja'?'ja-JP':'en-US';
   el('dtDate').textContent=now.toLocaleDateString(loc,{year:'numeric',month:'short',day:'numeric',weekday:'short'});
   el('dtTime').textContent=now.toLocaleTimeString(loc,{hour:'2-digit',minute:'2-digit',second:'2-digit'});
 }
-
-function toggleLang() {
-  state.lang=state.lang==='ja'?'en':'ja';
-  el('langBtn').textContent=state.lang==='ja'?'EN':'JP';
-  applyI18n(); updateDatetime();
-}
-function applyI18n() {
+function toggleLang(){state.lang=state.lang==='ja'?'en':'ja';el('langBtn').textContent=state.lang==='ja'?'EN':'JP';applyI18n();updateDatetime();}
+function applyI18n(){
   document.querySelectorAll('[data-i18n]').forEach(e=>{e.textContent=t(e.dataset.i18n);});
   document.querySelectorAll('[data-i18n-ph]').forEach(e=>{e.placeholder=t(e.dataset.i18nPh);});
-  if (state.myId) updateMicBtn();
+  if(state.myId)updateMicBtn();
   el('modeBtn').textContent=t(state.mode==='light'?'night-mode':'day-mode');
 }
-
-function runPageTransition(callback) {
-  const pt=el('pageTransition');
-  pt.classList.add('run');
-  setTimeout(()=>{
-    callback();
-    const target=el('room-screen').style.display==='flex'?el('room-screen'):el('join-screen');
-    target.classList.add('screen-fade');
-    setTimeout(()=>target.classList.remove('screen-fade'),400);
-  },260);
+function runPageTransition(cb){
+  const pt=el('pageTransition');pt.classList.add('run');
+  setTimeout(()=>{cb();const tg=el('room-screen').style.display==='flex'?el('room-screen'):el('join-screen');tg.classList.add('screen-fade');setTimeout(()=>tg.classList.remove('screen-fade'),400);},260);
   setTimeout(()=>pt.classList.remove('run'),600);
 }
-
-function buildColorDots() {
+function buildColorDots(){
   const row=el('colorRow');
   COLORS.forEach((c,i)=>{
     const d=document.createElement('div');
-    d.className='color-dot'+(i===0?' active':'');
-    d.style.background=c.hex;
+    d.className='color-dot'+(i===0?' active':'');d.style.background=c.hex;
     d.onclick=()=>{state.color=c.hex;document.querySelectorAll('.color-dot').forEach(x=>x.classList.remove('active'));d.classList.add('active');};
     row.appendChild(d);
   });
 }
+async function removeStaleUsers(){await db.from('users').delete().lt('last_seen',new Date(Date.now()-2*60*1000).toISOString());}
+async function fetchUsers(){const{data,error}=await db.from('users').select('*');if(error){console.error(error.message);return;}state.users=data||[];}
+async function fetchZones(){const{data,error}=await db.from('zones').select('*');if(error){console.error(error.message);return;}state.zones={};(data||[]).forEach(z=>{state.zones[z.id]=z;});}
 
-async function removeStaleUsers() {
-  await db.from('users').delete().lt('last_seen',new Date(Date.now()-2*60*1000).toISOString());
-}
-async function fetchUsers() {
-  const {data,error}=await db.from('users').select('*');
-  if (error){console.error(error.message);return;}
-  state.users=data||[];
-}
-async function fetchZones() {
-  const {data,error}=await db.from('zones').select('*');
-  if (error){console.error(error.message);return;}
-  state.zones={};
-  (data||[]).forEach(z=>{state.zones[z.id]=z;});
-}
-
-/* ============================================
-   リアルタイム購読
-   ============================================ */
-function subscribeRealtime() {
+function subscribeRealtime(){
   db.channel('Seaheya-'+Math.random().toString(36).slice(2,8))
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'users'},(p)=>{
-      const u=p.new;
-      if (!state.users.find(x=>x.id===u.id)) state.users=[...state.users,u];
-      renderPreview();
-      if (state.myId){
-        renderAvatars();
-        // 新規ユーザーが同じゾーンに入ったら通話を開始
-        if (u.peer_id && u.zone && u.zone===state.myZone && u.id!==state.myId && !state.isMuted) {
-          callPeer(u.peer_id);
-        }
-      }
+      const u=p.new;if(!state.users.find(x=>x.id===u.id))state.users=[...state.users,u];
+      renderPreview();if(state.myId){renderAvatars();if(u.peer_id&&u.zone&&u.zone===state.myZone&&u.id!==state.myId&&!state.isMuted)callPeer(u.peer_id);}
     })
     .on('postgres_changes',{event:'UPDATE',schema:'public',table:'users'},(p)=>{
-      const u=p.new, old=state.users.find(x=>x.id===u.id);
-      state.users=state.users.map(x=>x.id===u.id?u:x);
-      renderPreview();
-      if (state.myId){
+      const u=p.new,old=state.users.find(x=>x.id===u.id);
+      state.users=state.users.map(x=>x.id===u.id?u:x);renderPreview();
+      if(state.myId){
         const av=el('av_'+u.id);
-        if (av){
-          av.style.left=(u.x-23)+'px'; av.style.top=(u.y-23)+'px';
-          const badge=av.querySelector('.mic-badge');
-          if (!u.is_muted&&!badge) av.innerHTML+=micBadgeHTML();
-          else if (u.is_muted&&badge) badge.remove();
-        } else renderAvatars();
-        // ゾーンが変わった場合の通話処理
-        if (old && u.zone !== old.zone && u.id !== state.myId) {
-          handleZoneChange(u, old.zone);
-        }
+        if(av){av.style.left=(u.x-23)+'px';av.style.top=(u.y-23)+'px';const badge=av.querySelector('.mic-badge');if(!u.is_muted&&!badge)av.innerHTML+=micBadgeHTML();else if(u.is_muted&&badge)badge.remove();}
+        else renderAvatars();
+        if(old&&u.zone!==old.zone&&u.id!==state.myId)handleZoneChange(u,old.zone);
       }
     })
     .on('postgres_changes',{event:'DELETE',schema:'public',table:'users'},(p)=>{
-      const id=p.old.id;
-      const av=el('av_'+id);
-      if (av){av.style.transition='opacity .3s,transform .3s';av.style.opacity='0';av.style.transform='scale(.5)';setTimeout(()=>av.remove(),300);}
-      // 通話を切断
-      if (state.activeCalls[id]){state.activeCalls[id].close();delete state.activeCalls[id];}
-      state.users=state.users.filter(x=>x.id!==id);
-      renderPreview();
+      const id=p.old.id;const av=el('av_'+id);
+      if(av){av.style.transition='opacity .3s,transform .3s';av.style.opacity='0';av.style.transform='scale(.5)';setTimeout(()=>av.remove(),300);}
+      if(state.activeCalls[id]){state.activeCalls[id].close();delete state.activeCalls[id];}
+      state.users=state.users.filter(x=>x.id!==id);renderPreview();
     })
     .on('postgres_changes',{event:'*',schema:'public',table:'zones'},(p)=>{
-      // ゾーンの人数が変わったら更新
-      if (p.new) state.zones[p.new.id]=p.new;
-      renderZoneCards();
-      renderSofaBadges();
+      if(p.new)state.zones[p.new.id]=p.new;renderZoneCards();renderSofaBadges();
     })
     .subscribe(s=>console.log('Realtime:',s));
 }
 
-/* ============================================
-   プレビュー・ゾーンカード描画
-   ============================================ */
 function renderPreview(){
-  const s=state.users.filter(u=>u.room==='silent');
-  const a=state.users.filter(u=>u.room==='audio');
-  el('silent-count').textContent=s.length;
-  el('audio-count').textContent=a.length;
-  el('total-count').textContent=state.users.length;
-  renderChips('silent-chips',s);
-  renderChips('audio-chips',a);
+  const s=state.users.filter(u=>u.room==='silent');const a=state.users.filter(u=>u.room==='audio');
+  el('silent-count').textContent=s.length;el('audio-count').textContent=a.length;el('total-count').textContent=state.users.length;
+  renderChips('silent-chips',s);renderChips('audio-chips',a);
 }
-function renderChips(id,users){
-  const c=el(id);
-  if (!users.length){c.innerHTML=`<span class="empty-msg">${t('nobody')}</span>`;return;}
-  c.innerHTML=users.map(u=>`<div class="chip"><div class="chip-dot" style="background:${u.color}"></div>${u.name}</div>`).join('');
-}
+function renderChips(id,users){const c=el(id);if(!users.length){c.innerHTML=`<span class="empty-msg">${t('nobody')}</span>`;return;}c.innerHTML=users.map(u=>`<div class="chip"><div class="chip-dot" style="background:${u.color}"></div>${u.name}</div>`).join('');}
 function renderZoneCards(){
-  const cont=el('zoneCards');
-  if (!cont) return;
+  const cont=el('zoneCards');if(!cont)return;
   cont.innerHTML=Object.entries(ZONES).map(([id,def])=>{
     const z=state.zones[id]||{current:0,capacity:def.capacity};
     const pct=Math.min(100,Math.round(z.current/def.capacity*100));
     const full=z.current>=def.capacity;
-    return `<div class="zone-card">
-      <div class="zone-item-left">
-        <div class="zone-card-name">${def.label}</div>
-        <div class="zone-cap">${z.current}/${def.capacity}${state.lang==='ja'?'人':''}</div>
-      </div>
-      <div class="zone-item-right">
-        ${full?`<span class="zone-full">${t('zone-full')}</span>`:`<div class="zone-bar-wrap"><div class="zone-bar" style="width:${pct}%"></div></div>`}
-      </div>
-    </div>`;
+    return `<div class="zone-card"><div class="zone-item-left"><div class="zone-card-name">${def.label}</div><div class="zone-cap">${z.current}/${def.capacity}${state.lang==='ja'?'人':''}</div></div><div class="zone-item-right">${full?`<span class="zone-full">${t('zone-full')}</span>`:`<div class="zone-bar-wrap"><div class="zone-bar" style="width:${pct}%"></div></div>`}</div></div>`;
   }).join('');
 }
 function renderSofaBadges(){
   ['sofa-a','sofa-b','sofa-c','sofa-d'].forEach(id=>{
-    const b=el('badge-'+id); if (!b) return;
-    const z=state.zones[id]; if (!z) return;
-    const cap=ZONES[id].capacity;
-    b.textContent=`${z.current}/${cap}`;
-    b.className='sofa-badge'+(z.current>=cap?' full':'');
+    const wrap=el('badge-'+id);if(!wrap)return;
+    const z=state.zones[id];if(!z)return;
+    const cap=ZONES[id].capacity;const full=z.current>=cap;
+    wrap.innerHTML=`<div class="sofa-badge${full?' full':''}">${z.current}/${cap}</div>`;
   });
 }
+function selectRoom(r){state.room=r;el('btn-silent').className='room-btn'+(r==='silent'?' active':'');el('btn-audio').className='room-btn'+(r==='audio'?' active':'');}
+function onNameInput(){state.name=el('nameInput').value.trim();el('enterBtn').disabled=!state.name;}
 
-function selectRoom(r){
-  state.room=r;
-  el('btn-silent').className='room-btn'+(r==='silent'?' active':'');
-  el('btn-audio').className ='room-btn'+(r==='audio' ?' active':'');
-}
-function onNameInput(){
-  state.name=el('nameInput').value.trim();
-  el('enterBtn').disabled=!state.name;
-}
-
-/* ============================================
-   入室
-   ============================================ */
 async function joinRoom(){
-  if (!state.name) return;
+  if(!state.name)return;
   state.myId='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
-  state.isMuted=(state.room==='silent');
-  state.startTime=Date.now();
+  state.isMuted=(state.room==='silent');state.startTime=Date.now();
   const canvas=el('roomCanvas');
   const initX=state.room==='silent'?160:Math.round((canvas.offsetWidth||800)*.65);
   const initY=200;
-
-  const {error}=await db.from('users').insert({
-    id:state.myId,name:state.name,color:state.color,
-    room:state.room,x:initX,y:initY,
-    is_muted:state.isMuted,last_seen:new Date().toISOString(),
-    peer_id:null,zone:null,
-  });
-  if (error){alert('エラー: '+error.message);return;}
-
-  runPageTransition(()=>{
-    el('join-screen').style.display='none';
-    el('room-screen').style.display='flex';
-  });
-
+  const{error}=await db.from('users').insert({id:state.myId,name:state.name,color:state.color,room:state.room,x:initX,y:initY,is_muted:state.isMuted,last_seen:new Date().toISOString(),peer_id:null,zone:null});
+  if(error){alert('エラー: '+error.message);return;}
+  runPageTransition(()=>{el('join-screen').style.display='none';el('room-screen').style.display='flex';});
   updateStatus(state.name+(state.lang==='ja'?' さんが入室しました':' joined'));
   updateMicBtn();
   state.users=[...state.users,{id:state.myId,name:state.name,color:state.color,room:state.room,x:initX,y:initY,is_muted:state.isMuted,last_seen:new Date().toISOString(),peer_id:null,zone:null}];
-  setTimeout(()=>renderAvatars(),420);
-
-  // Audioエリアならマイク許可を求めてPeerJSを初期化
-  if (state.room==='audio') await initPeer();
-
-  state.stayTimer=setInterval(()=>{
-    const s=Math.floor((Date.now()-state.startTime)/1000);
-    el('stayTime').textContent=[Math.floor(s/3600),Math.floor((s%3600)/60),s%60].map(v=>String(v).padStart(2,'0')).join(':');
-  },1000);
-  state.heartbeatTimer=setInterval(async()=>{
-    await db.from('users').update({last_seen:new Date().toISOString()}).eq('id',state.myId);
-  },15000);
+  // ソファを配置してからアバターを描画
+  setTimeout(()=>{layoutSofas();renderAvatars();},420);
+  if(state.room==='audio')await initPeer();
+  state.stayTimer=setInterval(()=>{const s=Math.floor((Date.now()-state.startTime)/1000);el('stayTime').textContent=[Math.floor(s/3600),Math.floor((s%3600)/60),s%60].map(v=>String(v).padStart(2,'0')).join(':');},1000);
+  state.heartbeatTimer=setInterval(async()=>{await db.from('users').update({last_seen:new Date().toISOString()}).eq('id',state.myId);},15000);
 }
 
-/* ============================================
-   ★ PeerJS初期化（音声通話）
-   ============================================ */
 async function initPeer(){
-  try {
-    // マイクの許可を求める
+  try{
     state.localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
-    // デフォルトはミュート
-    state.localStream.getAudioTracks().forEach(t=>t.enabled=!state.isMuted);
-
-    // PeerJSサーバーに接続（無料のpeerjs.comを使用）
+    state.localStream.getAudioTracks().forEach(tr=>tr.enabled=!state.isMuted);
     state.peer=new Peer();
-    state.peer.on('open',(peerId)=>{
-      state.myPeerId=peerId;
-      console.log('PeerID取得:', peerId);
-      // 自分のPeerIDをDBに保存
-      db.from('users').update({peer_id:peerId}).eq('id',state.myId);
-    });
-
-    // ★ 着信を受け取る処理
-    state.peer.on('call',(call)=>{
-      const callerId=call.metadata?.userId;
-      console.log('着信:', callerId);
-      // 自分のストリームを返す
-      call.answer(state.localStream);
-      handleCallStream(call, callerId);
-    });
-
-    state.peer.on('error',(err)=>{console.error('PeerJSエラー:', err);});
-  } catch(e) {
-    console.warn('マイク許可が得られませんでした:', e.message);
-    updateStatus(state.lang==='ja'?'マイクの許可が必要です（HTTPS環境で動作します）':'Mic permission required (works in HTTPS)');
-  }
+    state.peer.on('open',(pid)=>{state.myPeerId=pid;db.from('users').update({peer_id:pid}).eq('id',state.myId);});
+    state.peer.on('call',(call)=>{call.answer(state.localStream);handleCallStream(call,call.metadata?.userId);});
+    state.peer.on('error',(e)=>console.error('PeerJS:',e));
+  }catch(e){console.warn('マイク許可エラー:',e.message);updateStatus(state.lang==='ja'?'マイクの許可が必要です（HTTPS環境で動作します）':'Mic permission required (HTTPS needed)');}
 }
-
-/* ★ 相手に電話をかける */
-async function callPeer(targetPeerId){
-  if (!state.peer || !state.localStream || !targetPeerId) return;
-  if (state.activeCalls[targetPeerId]) return; // すでに通話中
-  console.log('発信:', targetPeerId);
-  const call=state.peer.call(targetPeerId, state.localStream, {
-    metadata:{userId:state.myId}
-  });
-  handleCallStream(call, targetPeerId);
+async function callPeer(targetPeerId){if(!state.peer||!state.localStream||!targetPeerId||state.activeCalls[targetPeerId])return;const call=state.peer.call(targetPeerId,state.localStream,{metadata:{userId:state.myId}});handleCallStream(call,targetPeerId);}
+function handleCallStream(call,peerId){
+  call.on('stream',(rs)=>{let a=document.getElementById('audio_'+peerId);if(!a){a=document.createElement('audio');a.id='audio_'+peerId;a.autoplay=true;document.body.appendChild(a);}a.srcObject=rs;state.activeCalls[peerId]=call;updateStatus(t('call-connected'));});
+  call.on('close',()=>{const a=document.getElementById('audio_'+peerId);if(a)a.remove();delete state.activeCalls[peerId];updateStatus(t('call-ended'));});
 }
-
-/* ★ 通話のストリームを処理する */
-function handleCallStream(call, peerId){
-  call.on('stream',(remoteStream)=>{
-    // 相手の音声を再生する
-    let audio=document.getElementById('audio_'+peerId);
-    if (!audio){
-      audio=document.createElement('audio');
-      audio.id='audio_'+peerId;
-      audio.autoplay=true;
-      document.body.appendChild(audio);
-    }
-    audio.srcObject=remoteStream;
-    state.activeCalls[peerId]=call;
-    updateStatus(t('call-connected'));
-  });
-  call.on('close',()=>{
-    const audio=document.getElementById('audio_'+peerId);
-    if (audio) audio.remove();
-    delete state.activeCalls[peerId];
-    updateStatus(t('call-ended'));
-  });
-  call.on('error',(e)=>console.error('通話エラー:',e));
-}
-
-/* ★ ゾーンが変わったときの通話処理 */
-function handleZoneChange(user, oldZone){
-  // 相手が自分と同じゾーンに来た → 発信
-  if (user.zone===state.myZone && user.peer_id && !state.isMuted){
-    callPeer(user.peer_id);
-  }
-  // 相手が自分のゾーンから出た → 切断
-  if (oldZone===state.myZone && state.activeCalls[user.peer_id]){
-    state.activeCalls[user.peer_id].close();
-    delete state.activeCalls[user.peer_id];
-  }
-}
-
-/* ★ ゾーンに入る処理 */
+function handleZoneChange(user,oldZone){if(user.zone===state.myZone&&user.peer_id&&!state.isMuted)callPeer(user.peer_id);if(oldZone===state.myZone&&state.activeCalls[user.peer_id]){state.activeCalls[user.peer_id].close();delete state.activeCalls[user.peer_id];}}
 async function enterZone(zoneId){
   const old=state.myZone;
-  // 前のゾーンの人数を減らす
-  if (old && state.zones[old]){
-    await db.from('zones').update({current:Math.max(0,state.zones[old].current-1)}).eq('id',old);
-  }
+  if(old&&state.zones[old])await db.from('zones').update({current:Math.max(0,state.zones[old].current-1)}).eq('id',old);
   state.myZone=zoneId;
-  if (zoneId){
-    // 新しいゾーンの人数を増やす
-    const z=state.zones[zoneId];
-    if (z) await db.from('zones').update({current:z.current+1}).eq('id',zoneId);
-    // DBに自分のゾーンを保存
-    await db.from('users').update({zone:zoneId}).eq('id',state.myId);
-    // 同じゾーンにいる人全員に発信
-    const sameZone=state.users.filter(u=>u.zone===zoneId&&u.id!==state.myId&&u.peer_id&&!u.is_muted);
-    sameZone.forEach(u=>callPeer(u.peer_id));
-  } else {
-    await db.from('users').update({zone:null}).eq('id',state.myId);
-    // 全通話を切断
-    Object.values(state.activeCalls).forEach(c=>c.close());
-    state.activeCalls={};
-  }
-  await fetchZones();
-  renderZoneCards();
-  renderSofaBadges();
+  if(zoneId){const z=state.zones[zoneId];if(z)await db.from('zones').update({current:z.current+1}).eq('id',zoneId);await db.from('users').update({zone:zoneId}).eq('id',state.myId);const same=state.users.filter(u=>u.zone===zoneId&&u.id!==state.myId&&u.peer_id&&!u.is_muted);same.forEach(u=>callPeer(u.peer_id));}
+  else{await db.from('users').update({zone:null}).eq('id',state.myId);Object.values(state.activeCalls).forEach(c=>c.close());state.activeCalls={};}
+  await fetchZones();renderZoneCards();renderSofaBadges();
 }
-
-/* ★ Audioエリアに移動したときゾーン選択ダイアログを表示 */
-function showZoneSelect(x, y){
-  const old=el('zoneSelectDialog'); if (old) old.remove();
-  const overlay=document.createElement('div');
-  overlay.className='zone-select-overlay'; overlay.id='zoneSelectDialog';
+function showZoneSelect(x,y){
+  const old=el('zoneSelectDialog');if(old)old.remove();
+  const overlay=document.createElement('div');overlay.className='zone-select-overlay';overlay.id='zoneSelectDialog';
   const items=Object.entries(ZONES).map(([id,def])=>{
-    const z=state.zones[id]||{current:0,capacity:def.capacity};
-    const full=z.current>=def.capacity;
-    const current=state.myZone===id;
-    return `<div class="zone-item${full&&!current?' disabled':''}" onclick="selectZone('${id}','${x}','${y}')">
-      <div class="zone-item-left">
-        <div class="zone-item-name">${def.label}${current?' ✓':''}</div>
-        <div class="zone-item-desc">${state.lang==='ja'?`定員 ${def.capacity}人`:`Capacity: ${def.capacity}`}</div>
-      </div>
-      <div class="zone-item-right">
-        <span class="zone-cap-badge${full?' full':''}">${z.current}/${def.capacity}${full?(' — '+t('zone-full')):''}</span>
-      </div>
-    </div>`;
+    const z=state.zones[id]||{current:0,capacity:def.capacity};const full=z.current>=def.capacity&&id!=='freetalk';const cur=state.myZone===id;
+    return `<div class="zone-item${full&&!cur?' disabled':''}" onclick="selectZone('${id}','${x}','${y}')"><div class="zone-item-left"><div class="zone-item-name">${def.label}${cur?' ✓':''}</div><div class="zone-item-desc">${state.lang==='ja'?`定員 ${def.capacity===999?'∞':def.capacity+'人'}`:`Capacity: ${def.capacity===999?'∞':def.capacity}`}</div></div><div class="zone-item-right"><span class="zone-cap-badge${full?' full':''}">${def.capacity===999?z.current+'人':z.current+'/'+def.capacity}${full?' — '+t('zone-full'):''}</span></div></div>`;
   }).join('');
-  overlay.innerHTML=`
-    <div class="zone-select-box">
-      <div class="zone-select-title">${t('zone-select-title')}</div>
-      <div class="zone-select-sub">${t('zone-select-sub')}</div>
-      <div class="zone-list">${items}</div>
-      <button class="zone-cancel" onclick="document.getElementById('zoneSelectDialog').remove()">${t('zone-cancel')}</button>
-    </div>
-  `;
+  overlay.innerHTML=`<div class="zone-select-box"><div class="zone-select-title">${t('zone-select-title')}</div><div class="zone-select-sub">${t('zone-select-sub')}</div><div class="zone-list">${items}</div><button class="zone-cancel" onclick="document.getElementById('zoneSelectDialog').remove()">${t('zone-cancel')}</button></div>`;
   document.body.appendChild(overlay);
 }
+/* ★ ソファ・フリートークゾーンの中心座標を取得 */
+function getZoneCenter(zoneId) {
+  const canvas = el('roomCanvas');
+  const canvasW = canvas.offsetWidth;
+  const canvasH = canvas.offsetHeight;
+  const audioLeft = canvasW / 2; // Audio側の開始X
 
-async function selectZone(zoneId, x, y){
-  const dlg=el('zoneSelectDialog'); if (dlg) dlg.remove();
+  if (zoneId === 'freetalk') {
+    // フリートークゾーンの中央（Audio側の下40%の中心）
+    return {
+      x: audioLeft + (canvasW - audioLeft) / 2,
+      y: canvasH * 0.80
+    };
+  }
+
+  // ソファの場合はlayoutSofasと同じ計算で中心を求める
+  const audioW = canvasW / 2;
+  const sofaW = 160, sofaH = 120;
+  const cols = 2;
+  const paddingX = 20, paddingY = 44;
+  const totalW = audioW - paddingX * 2;
+  const gapX = (totalW - sofaW * cols) / (cols + 1);
+  const gapY = 20;
+
+  const idx = ['sofa-a','sofa-b','sofa-c','sofa-d'].indexOf(zoneId);
+  if (idx < 0) return { x: audioLeft + audioW / 2, y: canvasH / 2 };
+
+  const row = Math.floor(idx / cols);
+  const col = idx % cols;
+  const localX = paddingX + gapX + col * (sofaW + gapX) + sofaW / 2;
+  const localY = paddingY + row * (sofaH + gapY) + sofaH / 2;
+
+  return {
+    x: audioLeft + localX,
+    y: localY
+  };
+}
+
+async function selectZone(zoneId,x,y){
+  const dlg=el('zoneSelectDialog');if(dlg)dlg.remove();
   await enterZone(zoneId);
-  // ゾーンの家具の近くに移動
-  await moveTo(parseFloat(x), parseFloat(y));
+
+  // ★ ゾーンの中心座標に自分のアバターを移動
+  const center = getZoneCenter(zoneId);
+  await moveTo(center.x, center.y);
+
   const zLabel=ZONES[zoneId]?.label||zoneId;
   updateStatus(state.name+(state.lang==='ja'?` さんが ${zLabel} に入りました`:` joined ${zLabel}`));
-  if (zoneId==='freetalk') el('freetalkZone').classList.add('active');
-  else el('freetalkZone').classList.remove('active');
+  el('freetalkZone').classList.toggle('active',zoneId==='freetalk');
 }
-
-/* ============================================
-   アバター描画
-   ============================================ */
-function micBadgeHTML(){
-  return `<div class="mic-badge"><svg width="10" height="10" viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.8"><rect x="5.5" y="1" width="7" height="10" rx="3.5"/><path d="M2 9a7 7 0 0014 0"/></svg></div>`;
-}
+function micBadgeHTML(){return `<div class="mic-badge"><svg width="10" height="10" viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="1.8"><rect x="5.5" y="1" width="7" height="10" rx="3.5"/><path d="M2 9a7 7 0 0014 0"/></svg></div>`;}
 function renderAvatars(){
-  const canvas=el('roomCanvas');
-  canvas.querySelectorAll('.avatar').forEach(a=>a.remove());
+  const canvas=el('roomCanvas');canvas.querySelectorAll('.avatar').forEach(a=>a.remove());
   state.users.forEach(u=>{
-    const isMe=u.id===state.myId;
-    const inCall=!!state.activeCalls[u.peer_id];
-    const div=document.createElement('div');
-    div.className='avatar new-arrival'; div.id='av_'+u.id;
-    div.style.left=(u.x-23)+'px'; div.style.top=(u.y-23)+'px';
-    div.innerHTML=`
-      <div class="avatar-circle${isMe?' is-me':''}" style="background:${u.color}">
-        ${u.name[0].toUpperCase()}
-        ${inCall?'<div class="avatar-call-ring"></div>':''}
-      </div>
-      <div class="avatar-name" style="${isMe?'font-weight:500;color:var(--accent)':''}">${u.name}${isMe?(state.lang==='ja'?' (あなた)':' (you)'):''}</div>
-      ${!u.is_muted?micBadgeHTML():''}
-    `;
-    canvas.appendChild(div);
-    setTimeout(()=>div.classList.remove('new-arrival'),500);
+    const isMe=u.id===state.myId;const inCall=!!state.activeCalls[u.peer_id];
+    const div=document.createElement('div');div.className='avatar new-arrival';div.id='av_'+u.id;
+    div.style.left=(u.x-23)+'px';div.style.top=(u.y-23)+'px';
+    div.innerHTML=`<div class="avatar-circle${isMe?' is-me':''}" style="background:${u.color}">${u.name[0].toUpperCase()}${inCall?'<div class="avatar-call-ring"></div>':''}</div><div class="avatar-name" style="${isMe?'font-weight:500;color:var(--accent)':''}">${u.name}${isMe?(state.lang==='ja'?' (あなた)':' (you)'):''}</div>${!u.is_muted?micBadgeHTML():''}`;
+    canvas.appendChild(div);setTimeout(()=>div.classList.remove('new-arrival'),500);
   });
 }
-
-/* ============================================
-   移動
-   ============================================ */
 async function moveMe(e){
-  if (!state.myId) return;
-  const canvas=el('roomCanvas');
-  const rect=canvas.getBoundingClientRect();
-  const x=Math.round(e.clientX-rect.left);
-  const y=Math.round(e.clientY-rect.top);
+  if(!state.myId)return;
+  const canvas=el('roomCanvas');const rect=canvas.getBoundingClientRect();
+  const x=Math.round(e.clientX-rect.left);const y=Math.round(e.clientY-rect.top);
   const newRoom=x<rect.width/2?'silent':'audio';
-
-  // Silentエリアに移動→ゾーンを抜ける
-  if (newRoom==='silent' && state.room==='audio'){
-    await enterZone(null);
-    el('freetalkZone').classList.remove('active');
-  }
-  // Audioエリアに移動→ゾーン選択ダイアログ
-  if (newRoom==='audio' && state.room==='silent'){
-    await moveTo(x, y);
-    state.room=newRoom;
-    await db.from('users').update({room:newRoom,x,y,last_seen:new Date().toISOString()}).eq('id',state.myId);
-    showZoneSelect(x, y);
-    return;
-  }
-  // Audioエリア内でのクリック→ゾーン選択
-  if (newRoom==='audio' && state.room==='audio'){
-    await moveTo(x, y);
-    showZoneSelect(x, y);
-    return;
-  }
-
-  if (newRoom!==state.room){
-    state.room=newRoom;
-    if (newRoom==='silent'){state.isMuted=true;updateMicBtn();}
-    updateStatus(state.name+(state.lang==='ja'?` さんが ${newRoom==='silent'?'Silent':'Audio'} エリアへ移動しました`:` moved to ${newRoom==='silent'?'Silent':'Audio'} Area`));
-  }
-  await moveTo(x, y);
+  if(newRoom==='silent'&&state.room==='audio'){await enterZone(null);el('freetalkZone').classList.remove('active');}
+  if(newRoom==='audio'&&state.room==='silent'){await moveTo(x,y);state.room=newRoom;await db.from('users').update({room:newRoom,x,y,last_seen:new Date().toISOString()}).eq('id',state.myId);showZoneSelect(x,y);return;}
+  if(newRoom==='audio'&&state.room==='audio'){await moveTo(x,y);showZoneSelect(x,y);return;}
+  if(newRoom!==state.room){state.room=newRoom;if(newRoom==='silent'){state.isMuted=true;updateMicBtn();}updateStatus(state.name+(state.lang==='ja'?` さんが ${newRoom==='silent'?'Silent':'Audio'} エリアへ移動しました`:` moved to ${newRoom==='silent'?'Silent':'Audio'} Area`));}
+  await moveTo(x,y);
 }
-
-async function moveTo(x, y){
-  const myAv=el('av_'+state.myId);
-  if (myAv){myAv.style.left=(x-23)+'px';myAv.style.top=(y-23)+'px';}
+async function moveTo(x,y){
+  const myAv=el('av_'+state.myId);if(myAv){myAv.style.left=(x-23)+'px';myAv.style.top=(y-23)+'px';}
   state.users=state.users.map(u=>u.id===state.myId?{...u,x,y}:u);
   await db.from('users').update({x,y,is_muted:state.isMuted,last_seen:new Date().toISOString()}).eq('id',state.myId);
 }
-
-/* ============================================
-   マイク
-   ============================================ */
 async function toggleMic(){
-  state.isMuted=!state.isMuted;
-  updateMicBtn();
-  setStatusMicIcon(state.isMuted);
+  state.isMuted=!state.isMuted;updateMicBtn();setStatusMicIcon(state.isMuted);
   updateStatus(state.lang==='ja'?(state.isMuted?'マイクをオフにしました':'マイクをオンにしました'):(state.isMuted?'Microphone off':'Microphone on'));
-  // ローカルストリームのミュート切り替え
-  if (state.localStream){
-    state.localStream.getAudioTracks().forEach(track=>{track.enabled=!state.isMuted;});
-  }
+  if(state.localStream)state.localStream.getAudioTracks().forEach(tr=>{tr.enabled=!state.isMuted;});
   await db.from('users').update({is_muted:state.isMuted}).eq('id',state.myId);
 }
-function setStatusMicIcon(muted){
-  el('statusIcon').innerHTML=muted?MIC_MUTED:MIC_NORMAL;
-}
-function updateMicBtn(){
-  el('micBtnIcon').innerHTML=state.isMuted?MIC_MUTED:MIC_NORMAL;
-  el('micBtn').className=state.isMuted?'tb-btn mic-off':'tb-btn mic-on';
-  el('micLabel').textContent=t(state.isMuted?'mic-on':'mic-off-label');
-}
-
-/* ============================================
-   タイマー
-   ============================================ */
-function startTimer(minutes){
-  if (state.timerInterval){clearInterval(state.timerInterval);state.timerInterval=null;}
-  state.timerMinutes=minutes; state.timerRemaining=minutes*60; state.timerPaused=false;
-  el('timer5Btn').className='tb-btn'+(minutes===5?' timer-running':'');
-  el('timer10Btn').className='tb-btn'+(minutes===10?' timer-running':'');
-  el('timerInline').classList.add('visible');
-  el('timerDisplay').classList.remove('urgent');
-  el('timerLabel').textContent=minutes+(state.lang==='ja'?'分タイマー':' min Timer');
-  setPauseIcon(false); updateTimerDisplay();
-  state.timerInterval=setInterval(()=>{
-    if (state.timerPaused) return;
-    state.timerRemaining--;
-    updateTimerDisplay();
-    if (state.timerRemaining<=10) el('timerDisplay').classList.add('urgent');
-    if (state.timerRemaining<=0){
-      clearInterval(state.timerInterval);state.timerInterval=null;
-      el('timer5Btn').className='tb-btn';el('timer10Btn').className='tb-btn';
-      el('timerDisplay').textContent=t('timer-done');
-      updateStatus(t('timer-done'));
-    }
-  },1000);
-}
-function updateTimerDisplay(){
-  const d=el('timerDisplay'); if (!d) return;
-  d.textContent=[String(Math.floor(state.timerRemaining/60)).padStart(2,'0'),String(state.timerRemaining%60).padStart(2,'0')].join(':');
-}
+function setStatusMicIcon(muted){el('statusIcon').innerHTML=muted?MIC_MUTED:MIC_NORMAL;}
+function updateMicBtn(){el('micBtnIcon').innerHTML=state.isMuted?MIC_MUTED:MIC_NORMAL;el('micBtn').className=state.isMuted?'tb-btn mic-off':'tb-btn mic-on';el('micLabel').textContent=t(state.isMuted?'mic-on':'mic-off-label');}
+function startTimer(m){if(state.timerInterval){clearInterval(state.timerInterval);state.timerInterval=null;}state.timerMinutes=m;state.timerRemaining=m*60;state.timerPaused=false;el('timer5Btn').className='tb-btn'+(m===5?' timer-running':'');el('timer10Btn').className='tb-btn'+(m===10?' timer-running':'');el('timerInline').classList.add('visible');el('timerDisplay').classList.remove('urgent');el('timerLabel').textContent=m+(state.lang==='ja'?'分タイマー':' min Timer');setPauseIcon(false);updateTimerDisplay();state.timerInterval=setInterval(()=>{if(state.timerPaused)return;state.timerRemaining--;updateTimerDisplay();if(state.timerRemaining<=10)el('timerDisplay').classList.add('urgent');if(state.timerRemaining<=0){clearInterval(state.timerInterval);state.timerInterval=null;el('timer5Btn').className='tb-btn';el('timer10Btn').className='tb-btn';el('timerDisplay').textContent=t('timer-done');updateStatus(t('timer-done'));}},1000);}
+function updateTimerDisplay(){const d=el('timerDisplay');if(!d)return;d.textContent=[String(Math.floor(state.timerRemaining/60)).padStart(2,'0'),String(state.timerRemaining%60).padStart(2,'0')].join(':');}
 function pauseTimer(){state.timerPaused=!state.timerPaused;setPauseIcon(state.timerPaused);if(state.timerPaused)updateStatus(t('timer-paused'));}
 function setPauseIcon(p){el('timerPauseBtn').innerHTML=p?`<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><polygon points="3,2 11,7 3,12" fill="currentColor"/></svg>`:`<svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="2" y="2" width="4" height="10" rx="1" fill="currentColor"/><rect x="8" y="2" width="4" height="10" rx="1" fill="currentColor"/></svg>`;}
 function resetTimer(){if(state.timerInterval){clearInterval(state.timerInterval);state.timerInterval=null;}state.timerPaused=false;el('timerInline').classList.remove('visible');el('timerDisplay').classList.remove('urgent');el('timer5Btn').className='tb-btn';el('timer10Btn').className='tb-btn';}
-
-/* ============================================
-   退室確認
-   ============================================ */
 function leaveRoom(){
-  const old=el('confirmDialog'); if (old) old.remove();
-  const overlay=document.createElement('div');
-  overlay.className='confirm-overlay'; overlay.id='confirmDialog';
-  overlay.innerHTML=`
-    <div class="confirm-box">
-      <div class="confirm-title">${t('leave-title')}</div>
-      <div class="confirm-sub">${t('leave-sub').replace(/\\n/g,'<br>')}</div>
-      <div class="confirm-btns">
-        <button class="confirm-btn cancel" onclick="document.getElementById('confirmDialog').remove()">${t('leave-cancel')}</button>
-        <button class="confirm-btn ok" onclick="doLeave()">${t('leave-ok')}</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
+  const old=el('confirmDialog');if(old)old.remove();
+  const o=document.createElement('div');o.className='confirm-overlay';o.id='confirmDialog';
+  o.innerHTML=`<div class="confirm-box"><div class="confirm-title">${t('leave-title')}</div><div class="confirm-sub">${t('leave-sub').replace(/\\n/g,'<br>')}</div><div class="confirm-btns"><button class="confirm-btn cancel" onclick="document.getElementById('confirmDialog').remove()">${t('leave-cancel')}</button><button class="confirm-btn ok" onclick="doLeave()">${t('leave-ok')}</button></div></div>`;
+  document.body.appendChild(o);
 }
 async function doLeave(){
-  const dlg=el('confirmDialog'); if (dlg) dlg.remove();
-  clearInterval(state.stayTimer); clearInterval(state.heartbeatTimer);
-  resetTimer();
-  // ゾーンから退出
-  if (state.myZone) await enterZone(null);
-  // 通話を全て切断
+  const dlg=el('confirmDialog');if(dlg)dlg.remove();
+  clearInterval(state.stayTimer);clearInterval(state.heartbeatTimer);resetTimer();
+  if(state.myZone)await enterZone(null);
   Object.values(state.activeCalls).forEach(c=>c.close());
-  if (state.peer){state.peer.destroy();state.peer=null;}
-  if (state.localStream){state.localStream.getTracks().forEach(t=>t.stop());state.localStream=null;}
-  // 音声要素を削除
+  if(state.peer){state.peer.destroy();state.peer=null;}
+  if(state.localStream){state.localStream.getTracks().forEach(tr=>tr.stop());state.localStream=null;}
   document.querySelectorAll('audio[id^="audio_"]').forEach(a=>a.remove());
   await db.from('users').delete().eq('id',state.myId);
-  state.myId=null; state.myPeerId=null; state.myZone=null; state.name='';
-  runPageTransition(()=>{
-    el('room-screen').style.display='none';
-    el('join-screen').style.display='flex';
-  });
-  el('nameInput').value=''; el('enterBtn').disabled=true;
-  el('stayTime').textContent='00:00:00';
-  await fetchUsers(); await fetchZones(); renderPreview(); renderZoneCards();
+  state.myId=null;state.myPeerId=null;state.myZone=null;state.name='';
+  runPageTransition(()=>{el('room-screen').style.display='none';el('join-screen').style.display='flex';});
+  el('nameInput').value='';el('enterBtn').disabled=true;el('stayTime').textContent='00:00:00';
+  await fetchUsers();await fetchZones();renderPreview();renderZoneCards();
 }
-
-function updateStatus(msg){
-  el('statusText').textContent=msg;
-  el('statusText').style.animation='none';
-  requestAnimationFrame(()=>{el('statusText').style.animation='';});
-}
-function toggleMode(){
-  state.mode=state.mode==='light'?'dark':'light';
-  el('app').className=state.mode==='dark'?'dark':'';
-  document.body.style.background=state.mode==='dark'?'#071e2e':'#f0f8ff';
-  el('modeBtn').textContent=t(state.mode==='light'?'night-mode':'day-mode');
-}
-
-window.addEventListener('beforeunload',()=>{
-  if (!state.myId) return;
-  fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${state.myId}`,{
-    method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY},keepalive:true,
-  });
-});
-
+function updateStatus(msg){el('statusText').textContent=msg;el('statusText').style.animation='none';requestAnimationFrame(()=>{el('statusText').style.animation='';});}
+function toggleMode(){state.mode=state.mode==='light'?'dark':'light';el('app').className=state.mode==='dark'?'dark':'';document.body.style.background=state.mode==='dark'?'#071e2e':'#f0f8ff';el('modeBtn').textContent=t(state.mode==='light'?'night-mode':'day-mode');}
+window.addEventListener('beforeunload',()=>{if(!state.myId)return;fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${state.myId}`,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':'Bearer '+SUPABASE_KEY},keepalive:true});});
 init();
 </script>
 </body>
