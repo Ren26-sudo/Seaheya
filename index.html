@@ -974,12 +974,17 @@ function saveLog(evt,room=null,target=null){
 async function init(){
   buildColors();
   await Promise.allSettled([loadUsers(),loadZones(),loadMsgs()]);
+  // 起動時にゾーンカウントを実態に合わせて修正
+  await syncZoneCounts();
   renderPreview();
   startRealtime();
   S.dtTmr=setInterval(tickClock,1000);tickClock();
   // 古いユーザーを定期削除（WHERE句を確実に指定）
   async function removeStale(){
     await db.from('users').delete().lt('last_seen',new Date(Date.now()-75*1000).toISOString());
+    // 削除後にゾーンカウントを実態に合わせて同期
+    const fixed=await syncZoneCounts();
+    if(fixed>0)renderAll();
   }
   S.cleanTmr=setInterval(removeStale,60000);
   await removeStale();
@@ -1002,6 +1007,26 @@ async function loadZones(){
     S.zones={};d.forEach(z=>S.zones[z.id]=z);
   }
   console.log('[zones]',Object.keys(S.zones).length);
+}
+
+// zonesのcurrentをusersの実態に合わせて修正
+async function syncZoneCounts(){
+  const users=await dbSel('users');
+  // ゾーンごとの実際の人数を集計
+  const counts={};
+  users.forEach(u=>{if(u.zone)counts[u.zone]=(counts[u.zone]||0)+1;});
+  // 差異があるゾーンだけ更新
+  const fixes=[];
+  Object.entries(S.zones).forEach(([id,z])=>{
+    const real=counts[id]||0;
+    if(z.current!==real){
+      console.warn(`[syncZones] ${id}: ${z.current} -> ${real}`);
+      S.zones[id]={...z,current:real};
+      fixes.push(dbUpd('zones',{current:real},{id}));
+    }
+  });
+  if(fixes.length)await Promise.all(fixes);
+  return fixes.length;
 }
 async function loadMsgs(){
   // 新規参加者は過去のメッセージを見せない（joinTime以降のみ）
@@ -1387,32 +1412,43 @@ async function clickFt(){
 ============================================= */
 async function enterZone(zoneId,seatIdx=null){
   const old=S.myZone;
-  // ★ ローカルを即時更新（ラグなし）
   S.myZone=zoneId;
+  // ローカル即時更新
   S.users=S.users.map(u=>u.id===S.myId?{...u,zone:zoneId,seat_index:seatIdx}:u);
-  // ローカルのzonesも先に更新
-  if(old&&S.zones[old])S.zones[old]={...S.zones[old],current:Math.max(0,(S.zones[old].current||1)-1)};
-  if(zoneId&&S.zones[zoneId])S.zones[zoneId]={...S.zones[zoneId],current:(S.zones[zoneId].current||0)+1};
-  renderAll(); // 即時描画
+  // ローカルcountをユーザーリストから実数で計算
+  if(old&&S.zones[old]){
+    const realOld=S.users.filter(u=>u.zone===old).length;
+    S.zones[old]={...S.zones[old],current:realOld};
+  }
+  if(zoneId&&S.zones[zoneId]){
+    const realNew=S.users.filter(u=>u.zone===zoneId).length;
+    S.zones[zoneId]={...S.zones[zoneId],current:realNew};
+  }
+  renderAll();
   // 通話クリーンアップ
-  if(old&&isAudio(old)){Object.entries(S.calls).forEach(([,c])=>{try{c.close();}catch(e){}});S.calls={};}
-  // DB更新（バックグラウンド・並列）
-  const updates=[];
-  if(old){
-    const oz=S.zones[old];
-    if(oz)updates.push(dbUpd('zones',{current:Math.max(0,oz.current)},{id:old}));
-  }
+  if(old&&isAudio(old)){Object.entries(S.calls).forEach(([,cl])=>{try{cl.close();}catch(e){}});S.calls={};}
+  // DB更新：userを先に確定してからzoneを集計
   if(zoneId){
-    const z=S.zones[zoneId];
-    if(z)updates.push(dbUpd('zones',{current:z.current},{id:zoneId}));
-    updates.push(dbUpd('users',{zone:zoneId,seat_index:seatIdx,last_seen:new Date().toISOString()},{id:S.myId}));
+    await dbUpd('users',{zone:zoneId,seat_index:seatIdx,last_seen:new Date().toISOString()},{id:S.myId});
   }else{
-    updates.push(dbUpd('users',{zone:null,seat_index:null,last_seen:new Date().toISOString()},{id:S.myId}));
+    await dbUpd('users',{zone:null,seat_index:null,last_seen:new Date().toISOString()},{id:S.myId});
   }
-  await Promise.all(updates);
-  // DB確定後に音声接続
+  // DB確定後にusersを再取得してzoneカウントを正確に計算
+  const freshUsers=await dbSel('users');
+  S.users=freshUsers;
+  const counts={};
+  freshUsers.forEach(u=>{if(u.zone)counts[u.zone]=(counts[u.zone]||0)+1;});
+  const zoneUpdates=[];
+  [old,zoneId].filter(Boolean).forEach(zid=>{
+    const real=counts[zid]||0;
+    if(S.zones[zid]&&S.zones[zid].current!==real){
+      S.zones[zid]={...S.zones[zid],current:real};
+      zoneUpdates.push(dbUpd('zones',{current:real},{id:zid}));
+    }
+  });
+  await Promise.all(zoneUpdates);
+  // 音声接続
   if(zoneId&&isAudio(zoneId)){
-    await loadZones();
     S.users.filter(u=>u.zone===zoneId&&u.id!==S.myId&&u.peer_id&&!u.is_muted).forEach(u=>callPeer(u.peer_id,u.id));
   }
   renderAll();
@@ -1795,7 +1831,6 @@ function numpadStart(){
   startTimer(m);
 }
 // メニューを開いた時にテンキーをリセット
-const _origToggleTimer=toggleTimerMenu;
 function playBeep(){
   try{
     const ctx=new(window.AudioContext||window.webkitAudioContext)();
