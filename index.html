@@ -8,6 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
 /* ===== RESET ===== */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -416,6 +417,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 }
 .c-dot:hover{transform:scale(1.2);}
 .c-dot.on{outline:2.5px solid var(--ac);outline-offset:3px;}
+.cf-turnstile{margin-bottom:8px;}
 .enter-btn{
   width:100%;background:linear-gradient(135deg,#005f99,#0099cc);color:#fff;
   border:none;border-radius:10px;font-size:13px;font-family:inherit;
@@ -581,6 +583,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
       <div>
         <div class="field-lbl" data-i18n="icon-color">アイコンカラー</div>
         <div class="color-row" id="colorRow"></div>
+      </div>
+      <!-- Turnstile Bot対策 -->
+      <div class="cf-turnstile" id="turnstileWidget"
+        data-sitekey="0x4AAAAAADAe9noxL2ezNOc2"
+        data-callback="onTurnstileSuccess"
+        data-expired-callback="onTurnstileExpired"
+        data-theme="light">
       </div>
       <button class="enter-btn" id="enterBtn" disabled onclick="joinRoom()" data-i18n="enter">入室する</button>
     </div>
@@ -785,6 +794,7 @@ const S={
   pendingReq:null, reqTimeout:null,
   _boothLock:false, _roomLock:false, _sendingBarItv:null,
   chatOpen:false,
+  _turnstileToken:null,
   statusLock:0, lastLog:'—',
   cycleRunning:false, cycleTimer:null, countItv:null,
 };
@@ -923,10 +933,19 @@ function buildColors(){
     row.appendChild(d);
   });
 }
-function onName(){S.myName=$('nameInp').value.trim();$('enterBtn').disabled=!S.myName;}
+function onName(){
+  S.myName=$('nameInp').value.trim();
+  $('enterBtn').disabled=!S.myName||!S._turnstileToken;
+}
 
 async function joinRoom(){
   if(!S.myName)return;
+  // Turnstileトークン確認
+  const token=S._turnstileToken;
+  if(!token){
+    setStatus(S.lang==='ja'?'認証を完了してください':'Please complete verification',true);
+    return;
+  }
   S.myTask=($('taskInp')?.value||'').trim();
   S.myId='u_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
   S.isMuted=true;S.startTime=Date.now();
@@ -1554,6 +1573,10 @@ async function doLeave(){
   $('nameInp').value='';
   const ti=$('taskInp');if(ti)ti.value='';
   $('enterBtn').disabled=true;
+  // Turnstileをリセット
+  S._turnstileToken=null;
+  const tw=$('turnstileWidget');
+  if(tw&&window.turnstile)turnstile.reset(tw);
   await loadUsers();await loadZones();renderPreview();
 }
 
@@ -1616,6 +1639,12 @@ function toggleMode(){
   $('app').className=S.mode==='dark'?'dark':'';
   document.body.style.background=S.mode==='dark'?'#061620':'#eef6fc';
   $('modeBtn').textContent=t(S.mode==='light'?'night-mode':'day-mode');
+  // TurnstileのテーマをDark/Lightに合わせる
+  const tw=$('turnstileWidget');
+  if(tw&&window.turnstile){
+    turnstile.reset(tw);
+    tw.setAttribute('data-theme',S.mode);
+  }
 }
 
 /* =============================================
@@ -1634,6 +1663,17 @@ window.addEventListener('beforeunload',()=>{
     keepalive:true
   });
 });
+
+// Turnstileコールバック
+function onTurnstileSuccess(token){
+  S._turnstileToken=token;
+  // ボタンの有効化（名前が入力されている場合のみ）
+  if(S.myName)$('enterBtn').disabled=false;
+}
+function onTurnstileExpired(){
+  S._turnstileToken=null;
+  $('enterBtn').disabled=true;
+}
 
 init();
 </script>
