@@ -349,6 +349,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .tm-unit{font-size:13px;color:var(--tx2);flex-shrink:0;}
 /* テンキー */
 .tm-numpad-row{align-items:flex-start;gap:14px;}
+.tm-left-col{
+  display:flex;flex-direction:column;gap:8px;
+  min-width:80px;flex-shrink:0;
+}
 .tm-numpad-display{
   display:flex;align-items:baseline;gap:5px;
   min-width:64px;padding:10px 0;
@@ -811,22 +815,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 
   <!-- タイマーメニュー -->
   <div class="timer-menu" id="timerMenu">
-    <!-- 行1：プリセット＋閉じる -->
-    <div class="tm-row">
-      <button class="tm-btn" id="tm5" onclick="startTimerMenu(5)">5 <span data-i18n="min-unit">分</span></button>
-      <button class="tm-btn" id="tm15" onclick="startTimerMenu(15)">15 <span data-i18n="min-unit">分</span></button>
-      <button class="tm-btn tm-reset" id="tmResetBtn" onclick="resetTimer();toggleTimerMenu();">
-        <svg width="13" height="13" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7a5 5 0 1 0 1-3M2 2v4h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span data-i18n="reset">リセット</span>
-      </button>
-      <button class="tm-close" onclick="toggleTimerMenu()">✕</button>
-    </div>
-    <!-- 行2：テンキー -->
     <div class="tm-row tm-numpad-row">
-      <div class="tm-numpad-display">
-        <span class="tm-numpad-val" id="tmNumVal">--</span>
-        <span class="tm-unit" data-i18n="min-unit">分</span>
+      <!-- 左：プリセット＋表示 -->
+      <div class="tm-left-col">
+        <div class="tm-numpad-display">
+          <span class="tm-numpad-val" id="tmNumVal">--</span>
+          <span class="tm-unit" data-i18n="min-unit">分</span>
+        </div>
+        <button class="tm-btn" id="tm5" onclick="startTimerMenu(5)">5 <span data-i18n="min-unit">分</span></button>
+        <button class="tm-btn" id="tm15" onclick="startTimerMenu(15)">15 <span data-i18n="min-unit">分</span></button>
+        <button class="tm-btn tm-reset" id="tmResetBtn" onclick="resetTimer();toggleTimerMenu();">
+          <svg width="12" height="12" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 7a5 5 0 1 0 1-3M2 2v4h4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span data-i18n="reset">リセット</span>
+        </button>
       </div>
+      <!-- 右：テンキーグリッド -->
       <div class="tm-numpad-grid">
         <button class="tm-numpad-key" onclick="numpadPress(1)">1</button>
         <button class="tm-numpad-key" onclick="numpadPress(2)">2</button>
@@ -841,6 +844,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
         <button class="tm-numpad-key" onclick="numpadPress(0)">0</button>
         <button class="tm-numpad-key tm-numpad-start" onclick="numpadStart()">Start</button>
       </div>
+      <!-- 閉じるボタン -->
+      <button class="tm-close" onclick="toggleTimerMenu()" style="align-self:flex-start;">✕</button>
     </div>
   </div>
 
@@ -1757,7 +1762,7 @@ function startTimerMenu(n){$('timerMenu')?.classList.remove('open');startTimer(n
 function startTimerCustom(){
   const inp=$('tmInp');if(!inp)return;
   const m=parseInt(inp.value,10);
-  if(!m||m<1||m>180){inp.focus();return;}
+  if(!m||m<1||m>600){inp.focus();return;}
   inp.value='';
   $('timerMenu')?.classList.remove('open');
   startTimer(m);
@@ -1820,7 +1825,7 @@ function updateNumpadDisplay(){
 }
 function numpadStart(){
   const m=parseInt(_numStr,10);
-  if(!m||m<1||m>180){
+  if(!m||m<1||m>600){
     const v=$('tmNumVal');
     if(v){v.textContent='!';setTimeout(()=>{v.textContent=_numStr||'--';},600);}
     return;
@@ -2048,8 +2053,21 @@ function toggleMenu(){
   const open=!p.classList.contains('open');
   p.classList.toggle('open',open);
   // モバイルでは言語・モード切替を表示
-  const mt=$('menuMobileToggles');
-  if(mt)mt.style.display=window.innerWidth<=680?'flex':'none';
+  const mmt=$('menuMobileToggles');
+  if(mmt)mmt.style.display=window.innerWidth<=680?'flex':'none';
+  // 作業内容セクションを入室中のみ表示
+  const taskSec=$('menuTaskSection');
+  if(taskSec){
+    taskSec.style.display=S.myId?'flex':'none';
+    if(S.myId){
+      const cur=$('menuTaskCur');
+      if(cur)cur.textContent=S.myTask||(S.lang==='ja'?'（未設定）':'(not set)');
+      const lbl=$('menuTaskLbl');
+      if(lbl)lbl.textContent=S.lang==='ja'?'作業内容':'Current task';
+      const btn=$('menuTaskBtn');
+      if(btn)btn.textContent=S.lang==='ja'?'作業内容を変更する':'Change task';
+    }
+  }
   if(open){
     updateMenuBtns();
     // メニュー外クリックで閉じる
@@ -2164,28 +2182,7 @@ function showModal(type){
   document.body.appendChild(ov);
   ov.addEventListener('pointerdown',e=>{if(e.target===ov)ov.remove();});
 }
-function toggleMenu(){
-  const p=$('menuPanel'),b=$('menuBackdrop');if(!p)return;
-  // 作業内容セクションを入室中のみ表示
-  const taskSec=$('menuTaskSection');
-  if(taskSec){
-    taskSec.style.display=S.myId?'flex':'none';
-    if(S.myId){
-      const cur=$('menuTaskCur');
-      if(cur)cur.textContent=S.myTask||(S.lang==='ja'?'（未設定）':'(not set)');
-      const lbl=$('menuTaskLbl');
-      if(lbl)lbl.textContent=S.lang==='ja'?'作業内容':'Current task';
-      const btn=$('menuTaskBtn');
-      if(btn)btn.textContent=S.lang==='ja'?'作業内容を変更する':'Change task';
-    }
-  }
-  const open=!p.classList.contains('open');
-  p.classList.toggle('open',open);
-  b.classList.toggle('open',open);
-  // モバイル用ボタンのテキスト更新
-  const lt=$('menuLangTxt');if(lt)lt.textContent=S.lang==='ja'?'EN (English)':'JP (日本語)';
-  const mt=$('menuModeTxt');if(mt)mt.textContent=t(S.mode==='light'?'night-mode':'day-mode');
-}
+
 
 const TERMS=`Seaheya / シーヘヤ！ 利用規約
 
