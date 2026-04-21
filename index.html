@@ -500,6 +500,75 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   display:flex;align-items:center;justify-content:center;
   font-size:10px;color:var(--tx3);letter-spacing:.04em;
 }
+/* ===== MENU ===== */
+.menu-btn{
+  height:var(--hdr);padding:0 14px 0 18px;flex-shrink:0;
+  background:transparent;border:none;
+  color:var(--tx2);font-size:18px;
+  cursor:pointer;transition:all .18s;position:relative;
+  display:flex;align-items:center;
+}
+.menu-btn::before{
+  content:'';position:absolute;left:4px;top:16%;bottom:16%;
+  width:1.5px;
+  background:linear-gradient(180deg,transparent,var(--bd2),transparent);
+  transform:skewX(-18deg);
+}
+.menu-btn:hover{background:var(--ac2);color:var(--ac);}
+.menu-panel{
+  position:fixed;top:var(--hdr);right:0;
+  width:240px;
+  background:var(--sf);border-left:1px solid var(--bd);border-bottom:1px solid var(--bd);
+  border-radius:0 0 0 14px;
+  box-shadow:-4px 4px 20px rgba(0,80,130,.12);
+  z-index:300;
+  display:none;flex-direction:column;
+  animation:fadeUp .2s ease;
+}
+.menu-panel.open{display:flex;}
+.menu-section{padding:12px 16px;border-bottom:1px solid var(--bd);display:flex;flex-direction:column;gap:6px;}
+.menu-section:last-child{border-bottom:none;}
+.menu-section-lbl{font-size:10px;color:var(--tx3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;}
+.menu-row{display:flex;gap:6px;}
+.menu-toggle{
+  flex:1;background:var(--bg2);border:1.5px solid var(--bd2);border-radius:10px;
+  color:var(--tx2);font-size:12px;font-family:inherit;
+  padding:9px 10px;cursor:pointer;transition:all .15s;text-align:center;
+  font-weight:500;letter-spacing:.04em;
+}
+.menu-toggle:hover{background:var(--ac2);color:var(--ac);border-color:var(--ac);}
+.menu-link{
+  background:var(--bg2);border:1.5px solid var(--bd2);border-radius:10px;
+  color:var(--tx2);font-size:12px;font-family:inherit;
+  padding:9px 12px;cursor:pointer;transition:all .15s;text-align:left;
+  font-weight:400;
+}
+.menu-link:hover{background:var(--ac2);color:var(--ac);border-color:var(--ac);}
+/* モーダル */
+.modal-ov{
+  position:fixed;inset:0;background:rgba(0,20,40,.6);
+  display:flex;align-items:center;justify-content:center;
+  z-index:9100;backdrop-filter:blur(4px);animation:fadeUp .2s ease;
+}
+.modal-box{
+  background:var(--sf);border-radius:16px;
+  width:min(560px,92vw);max-height:80vh;
+  display:flex;flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,60,120,.25);
+  border:1px solid var(--bd2);
+}
+.modal-hdr{
+  padding:16px 20px;border-bottom:1px solid var(--bd);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.modal-title{font-size:14px;font-weight:600;color:var(--ac);}
+.modal-close{background:transparent;border:none;cursor:pointer;color:var(--tx3);font-size:18px;padding:4px;}
+.modal-body{flex:1;overflow-y:auto;padding:18px 20px;font-size:12px;color:var(--tx2);line-height:1.9;white-space:pre-wrap;}
+.modal-body::-webkit-scrollbar{width:3px;}
+.modal-body::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px;}
+@media(max-width:680px){
+  .menu-panel{width:100%;border-radius:0;border-left:none;}
+}
 
 /* ===== MOBILE ===== */
 @media(max-width:680px){
@@ -562,7 +631,25 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   </div>
   <button class="hdr-btn" id="langBtn" onclick="toggleLang()">EN</button>
   <button class="hdr-btn" id="modeBtn" onclick="toggleMode()">Night</button>
+  <button class="menu-btn" id="menuBtn" onclick="toggleMenu()" aria-label="Menu">&#9776;</button>
 </header>
+<!-- メニューパネル -->
+<div class="menu-panel" id="menuPanel">
+  <!-- モバイル用: 言語・モード切替 -->
+  <div class="menu-section" id="menuMobileToggles" style="display:none;">
+    <div class="menu-section-lbl">Settings</div>
+    <div class="menu-row">
+      <button class="menu-toggle" id="menuLangBtn" onclick="toggleLang();updateMenuBtns()">EN</button>
+      <button class="menu-toggle" id="menuModeBtn" onclick="toggleMode();updateMenuBtns()">Night</button>
+    </div>
+  </div>
+  <!-- リンク -->
+  <div class="menu-section">
+    <div class="menu-section-lbl">Info</div>
+    <button class="menu-link" onclick="showModal('tos')">利用規約 / Terms of Service</button>
+    <button class="menu-link" onclick="showModal('pp')">プライバシーポリシー / Privacy Policy</button>
+  </div>
+</div>
 
 <!-- 入室画面 -->
 <div id="join-screen" style="display:none;">
@@ -742,7 +829,7 @@ const I18N={
     'leave-cancel':'キャンセル','leave-ok':'退出する',
     'timer-done':'タイマー終了！','zone-full':'満員',
     'call-connected':'通話が繋がりました','call-ended':'通話が終了しました',
-    'req-deny':'断る','req-allow':'許可する','req-sent':'入室リクエストを送りました',
+    'req-deny':'断る','req-allow':'許可する','req-sent':'入室リクエストを送りました','terms':'利用規約','privacy':'プライバシーポリシー',
     'req-denied':'リクエストが断られました',
   },
   en:{
@@ -756,7 +843,7 @@ const I18N={
     'leave-cancel':'Cancel','leave-ok':'Leave',
     'timer-done':'Time\'s up!','zone-full':'Full',
     'call-connected':'Call connected','call-ended':'Call ended',
-    'req-deny':'Deny','req-allow':'Allow','req-sent':'Join request sent',
+    'req-deny':'Deny','req-allow':'Allow','req-sent':'Join request sent','terms':'Terms of Service','privacy':'Privacy Policy',
     'req-denied':'Your request was denied',
   }
 };
@@ -795,6 +882,8 @@ const S={
   _boothLock:false, _roomLock:false, _sendingBarItv:null,
   chatOpen:false,
   _turnstileToken:null,
+  msgJoinTime:null,
+  joinTime:0,
   statusLock:0, lastLog:'—',
   cycleRunning:false, cycleTimer:null, countItv:null,
 };
@@ -827,7 +916,7 @@ async function init(){
   S.dtTmr=setInterval(tickClock,1000);tickClock();
   // 古いユーザーを定期削除（WHERE句を確実に指定）
   async function removeStale(){
-    await db.from('users').delete().lt('last_seen',new Date(Date.now()-2*60*1000).toISOString());
+    await db.from('users').delete().lt('last_seen',new Date(Date.now()-75*1000).toISOString());
   }
   S.cleanTmr=setInterval(removeStale,60000);
   await removeStale();
@@ -852,8 +941,9 @@ async function loadZones(){
   console.log('[zones]',Object.keys(S.zones).length);
 }
 async function loadMsgs(){
-  const{data}=await db.from('messages').select('*').order('created_at',{ascending:true}).limit(100);
-  S.msgs=data||[];
+  // 新規参加者は過去のメッセージを見せない（joinTime以降のみ）
+  S.msgs=[];
+  S.joinTime=Date.now();
 }
 
 /* =============================================
@@ -913,14 +1003,20 @@ function onUDelete(id){
   renderAll();
 }
 function onMsgInsert(m){
-  // tempメッセージ（同じuser+content+直近）を置き換え
   const now=Date.now();
+  const msgTime=new Date(m.created_at).getTime();
+  // 自分の入室前のメッセージは無視
+  if(msgTime<S.joinTime-1000)return;
+  // tempメッセージ（同じuser+content+直近）を置き換え
   const dupIdx=S.msgs.findIndex(x=>x.id.startsWith('tmp_')&&x.user_id===m.user_id&&x.content===m.content&&now-parseInt(x.id.split('_')[1])<10000);
   if(dupIdx>=0){
     S.msgs.splice(dupIdx,1,m);
   }else if(!S.msgs.find(x=>x.id===m.id)){
     S.msgs=[...S.msgs,m];
   }
+  // 表示は5分以内のメッセージのみ
+  const cutoff=Date.now()-5*60*1000;
+  S.msgs=S.msgs.filter(m=>new Date(m.created_at).getTime()>cutoff||m.id.startsWith('tmp_'));
   renderMsgs();
 }
 function isAudio(z){return z&&(z.startsWith('room-')||z==='freetalk');}
@@ -971,7 +1067,7 @@ async function joinRoom(){
   setStatus(S.myName+(S.lang==='ja'?' さんが入室しました':' joined'));
   updateMic();
   S.stayTmr=setInterval(()=>{},1000);
-  S.hbTmr=setInterval(()=>dbUpd('users',{last_seen:new Date().toISOString()},{id:S.myId}),15000);
+  S.hbTmr=setInterval(()=>{if(S.myId)dbUpd('users',{last_seen:new Date().toISOString()},{id:S.myId});},8000);
   initPeer();
   setTimeout(()=>startCycle(),6000);
 }
@@ -997,7 +1093,7 @@ function renderBooths(){
             ${occ.task?`<div class="b-task">${esc(occ.task)}</div>`:''}
           </div>
         </div>
-        ${isMe?`<div class="b-here">● HERE</div>`:''}`
+        ${isMe?`<div class="b-here" onclick="changeTask(event)" title="${S.lang==='ja'?'作業内容を変更':'Change task'}" style="cursor:pointer;">● HERE</div>`:''}`
       :`<div class="b-num">Booth ${i}</div>
         <div class="b-user"><div class="b-empty">${S.lang==='ja'?'空席':'Empty'}</div></div>`;
     if(!occ)d.onclick=()=>clickBooth(i);
@@ -1117,6 +1213,33 @@ async function clickRoom(roomId){
   }finally{
     S._roomLock=false;
   }
+}
+
+function changeTask(e){
+  if(e)e.stopPropagation();
+  const cur=S.myTask||'';
+  const ov=document.createElement('div');ov.className='overlay';ov.id='taskDlg';
+  ov.innerHTML=`<div class="dlg" style="padding:28px 32px;width:340px;">
+    <div style="font-size:15px;font-weight:500;margin-bottom:6px;">${S.lang==='ja'?'作業内容を変更':'Change task'}</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;">${S.lang==='ja'?'ブースに表示されます（任意）':'Displayed on your booth (optional)'}</div>
+    <input class="j-inp" id="taskChangeInp" value="${esc(cur)}" placeholder="${S.lang==='ja'?'例：英語の勉強…':'e.g. English study…'}" maxlength="30" style="font-size:14px;">
+    <div style="display:flex;gap:10px;margin-top:16px;">
+      <button class="dlg-btn cancel" onclick="$('taskDlg').remove()">${S.lang==='ja'?'キャンセル':'Cancel'}</button>
+      <button class="dlg-btn ok" style="background:linear-gradient(135deg,var(--acl),var(--ac));color:#fff;" onclick="saveTask()">${S.lang==='ja'?'保存':'Save'}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  setTimeout(()=>$('taskChangeInp')?.focus(),50);
+  $('taskChangeInp').onkeydown=e=>{if(e.key==='Enter')saveTask();};
+}
+async function saveTask(){
+  const inp=$('taskChangeInp');if(!inp)return;
+  const newTask=inp.value.trim();
+  $('taskDlg')?.remove();
+  S.myTask=newTask;
+  S.users=S.users.map(u=>u.id===S.myId?{...u,task:newTask}:u);
+  renderBooths();
+  await dbUpd('users',{task:newTask},{id:S.myId});
 }
 
 async function leaveZone(){
@@ -1694,6 +1817,35 @@ function tickClock(){
    ユーティリティ
 ============================================= */
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function editTask(e){
+  e.stopPropagation();
+  if(!S.myId)return;
+  const cur=S.users.find(u=>u.id===S.myId)?.task||'';
+  const ov=document.createElement('div');ov.className='overlay';ov.id='editTaskDlg';
+  ov.innerHTML=`<div class="dlg" style="padding:28px 32px;width:340px;">
+    <div style="font-size:15px;font-weight:500;margin-bottom:6px;">${S.lang==='ja'?'作業内容を変更':'Update Task'}</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:14px;">${S.lang==='ja'?'ブースに表示されます':'Displayed on your booth'}</div>
+    <input id="editTaskInp" class="j-inp" style="font-size:14px;margin-bottom:16px;"
+      placeholder="${S.lang==='ja'?'例：英語の勉強…':'e.g. Study English…'}"
+      maxlength="30" value="${esc(cur)}" autocomplete="off">
+    <div class="dlg-btns">
+      <button class="dlg-btn cancel" onclick="$('editTaskDlg').remove()">${S.lang==='ja'?'キャンセル':'Cancel'}</button>
+      <button class="dlg-btn ok" style="background:linear-gradient(135deg,var(--acl),var(--ac));color:#fff;" onclick="saveTask()">${S.lang==='ja'?'保存':'Save'}</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  const inp=$('editTaskInp');inp.focus();inp.select();
+  inp.onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();saveTask();}};
+}
+async function saveTask(){
+  const inp=$('editTaskInp');if(!inp)return;
+  const task=inp.value.trim();
+  $('editTaskDlg')?.remove();
+  S.myTask=task;
+  S.users=S.users.map(u=>u.id===S.myId?{...u,task}:u);
+  renderBooths();
+  await dbUpd('users',{task},{id:S.myId});
+}
 
 /* =============================================
    レート制限
@@ -1733,7 +1885,230 @@ function applyI18n(){
   if(S.myId)updateMic();
   $('modeBtn').textContent=t(S.mode==='light'?'night-mode':'day-mode');
   const ct=$('cpTitle');if(ct)ct.textContent=S.lang==='ja'?'サイレントエリア全体チャット':'Silent Area Global Chat';
+  const lt=$('menuLangTxt');if(lt)lt.textContent=S.lang==='ja'?'EN (English)':'JP (日本語)';
+  const mt=$('menuModeTxt');if(mt)mt.textContent=t(S.mode==='light'?'night-mode':'day-mode');
 }
+function toggleMenu(){
+  const p=$('menuPanel');if(!p)return;
+  const open=!p.classList.contains('open');
+  p.classList.toggle('open',open);
+  // モバイルでは言語・モード切替を表示
+  const mt=$('menuMobileToggles');
+  if(mt)mt.style.display=window.innerWidth<=680?'flex':'none';
+  if(open){
+    updateMenuBtns();
+    // メニュー外クリックで閉じる
+    setTimeout(()=>{
+      const close=e=>{
+        const p2=$('menuPanel');const b=$('menuBtn');
+        if(p2&&!p2.contains(e.target)&&e.target!==b&&!b?.contains(e.target)){
+          p2.classList.remove('open');
+          document.removeEventListener('pointerdown',close);
+        }
+      };
+      document.addEventListener('pointerdown',close);
+    },10);
+  }
+}
+function updateMenuBtns(){
+  const lb=$('menuLangBtn');const mb=$('menuModeBtn');
+  if(lb)lb.textContent=S.lang==='ja'?'EN':'JP';
+  if(mb)mb.textContent=t(S.mode==='light'?'night-mode':'day-mode');
+}
+const TOS_TEXT=`Seaheya / シーヘヤ！ 利用規約
+
+本規約は、運営者が提供するオンライン自習室サービス「Seaheya / シーヘヤ！」（以下「本サービス」）の利用条件を定めるものです。利用者の皆さま（以下「ユーザー」）には、本規約に従って本サービスをご利用いただきます。
+
+第1条（適用）
+本規約は、ユーザーと本サービスとの間の利用に関わる一切の関係に適用されるものとします。
+
+第2条（利用方法）
+1. ユーザーは、本サービス入室時に設定する表示名、作業内容、アイコンカラー等の情報を、自らの責任において適切に管理するものとします。
+2. 本サービスは、学習や作業の集中を目的としたコミュニティです。ユーザーは、選択したエリア（Silent Area / Audio Area 等）の趣旨に沿った利用を心がけるものとします。
+
+第3条（禁止事項）
+ユーザーは、本サービスの利用にあたり、以下の行為を行ってはなりません。
+1. 法令または公序良俗に違反する行為。
+2. 他のユーザーに対する嫌がらせ、誹謗中傷、または不快感を与える行為。
+3. 広告、宣伝、勧誘、または営業活動（運営者が許可したものを除く）。
+4. 本サービス内のチャットや音声機能を悪用し、個人情報を収集したり、わいせつな内容を送信したりする行為。
+5. 本サービスのサーバーやネットワークの機能を破壊したり、妨害したりする行為。
+6. その他、運営者が不適切と判断する行為。
+
+第4条（サービスの提供の停止等）
+運営者は、以下のいずれかの事由があると判断した場合、ユーザーに事前に通知することなく本サービスの全部または一部の提供を停止または中断することができるものとします。
+1. 本サービスにかかるシステムの保守点検または更新を行う場合。
+2. 地震、落雷、火災、停電または天災などの不可抗力により、本サービスの提供が困難となった場合。
+3. その他、運営者が本サービスの提供が困難と判断した場合。
+
+第5条（免責事項）
+1. 運営者は、本サービスに関して、ユーザーと他のユーザーまたは第三者との間において生じた取引、連絡または紛争等について一切責任を負いません。
+2. ユーザー自身のネットワーク環境やデバイスの不具合により本サービスが利用できない場合について、運営者は責任を負いません。
+
+第6条（著作権・知的財産権）
+本サービスに関するコンテンツ（プログラム、デザイン等）の著作権は、運営者または正当な権利者に帰属します。
+
+第7条（利用規約の変更）
+運営者は、必要と判断した場合には、ユーザーに通知することなくいつでも本規約を変更することができるものとします。変更後の規約は、本サービス上に表示された時点より効力を生じるものとします。
+
+第8条（準拠法・裁判管轄）
+1. 本規約の解釈にあたっては、日本法を準拠法とします。
+2. 本サービスに関して紛争が生じた場合には、運営者の所在地を管轄する裁判所を専属的合意管轄とします。`;
+const PP_TEXT=`Seaheya / シーヘヤ！ プライバシーポリシー
+
+「Seaheya / シーヘヤ！」（以下「本サービス」）は、ユーザーの個人情報の保護を重要視し、以下の通りプライバシーポリシー（以下「本ポリシー」）を定めます。
+
+1. 取得する個人情報
+本サービスでは、以下の情報を取得する場合があります。
+・ユーザー名、作業内容等のサービス利用情報
+・入室履歴、チャットログ等の利用履歴
+・IPアドレス、ブラウザの種類、OS、アクセス日時、Cookie等の技術的情報
+
+2. 情報の利用目的
+取得した情報は、以下の目的で利用いたします。
+・ユーザー認証および本サービスの提供・運営のため
+・ユーザー同士の円滑なコミュニケーション（表示名の表示等）のため
+・本サービスの維持、改善、および新機能の開発のため
+・不正利用（嫌がらせ行為、スパム等）の防止および利用規約違反への対応のため
+・ユーザーからの問い合わせに対応するため
+
+3. 情報の管理と保護
+本サービスは、ユーザーの個人情報を適切に管理し、不正アクセス、紛失、破壊、改ざんおよび漏洩の防止に努めます。
+
+4. 第三者への提供
+本サービスは、次の場合を除き、ユーザーの同意を得ることなく個人情報を第三者に提供することはありません。
+・法令に基づき、裁判所や警察等の公的機関から開示を求められた場合
+・人の生命、身体または財産の保護のために必要がある場合であって、本人の同意を得ることが困難であるとき
+・サービス運営の一部を外部（サーバー管理会社等）に委託する場合
+
+5. 情報の開示・訂正・削除
+ユーザーはアカウントの削除（退室）により、登録情報の消去を求めることができます。
+
+6. Cookie（クッキー）の利用
+本サービスでは、利便性向上のためにCookieを使用することがあります。ユーザーはブラウザの設定によりCookieを無効にすることができますが、その場合、本サービスの一部機能が利用できなくなる可能性があります。
+
+7. プライバシーポリシーの変更
+本サービスは、法令の変更や運営方針に基づき、本ポリシーを随時変更することができるものとします。変更後のポリシーは、本サービス上に掲載した時点から効力を生じるものとします。
+
+8. お問い合わせ窓口
+本ポリシーに関するお問い合わせは、本サービス内の問い合わせフォーム、または運営者が指定する方法にてご連絡ください。`;
+function showModal(type){
+  $('menuPanel')?.classList.remove('open');
+  const ov=document.createElement('div');ov.className='modal-ov';
+  const title=type==='tos'
+    ?(S.lang==='ja'?'利用規約':'Terms of Service')
+    :(S.lang==='ja'?'プライバシーポリシー':'Privacy Policy');
+  const text=type==='tos'?TOS_TEXT:PP_TEXT;
+  ov.innerHTML=`<div class="modal-box">
+    <div class="modal-hdr">
+      <span class="modal-title">${title}</span>
+      <button class="modal-close" onclick="this.closest('.modal-ov').remove()">✕</button>
+    </div>
+    <div class="modal-body">${esc(text)}</div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('pointerdown',e=>{if(e.target===ov)ov.remove();});
+}
+function toggleMenu(){
+  const p=$('menuPanel'),b=$('menuBackdrop');if(!p)return;
+  const open=!p.classList.contains('open');
+  p.classList.toggle('open',open);
+  b.classList.toggle('open',open);
+  // モバイル用ボタンのテキスト更新
+  const lt=$('menuLangTxt');if(lt)lt.textContent=S.lang==='ja'?'EN (English)':'JP (日本語)';
+  const mt=$('menuModeTxt');if(mt)mt.textContent=t(S.mode==='light'?'night-mode':'day-mode');
+}
+
+const TERMS=`Seaheya / シーヘヤ！ 利用規約
+
+本規約は、運営者が提供するオンライン自習室サービス「Seaheya / シーヘヤ！」（以下「本サービス」）の利用条件を定めるものです。
+
+第1条（適用）
+本規約は、ユーザーと本サービスとの間の利用に関わる一切の関係に適用されます。
+
+第2条（利用方法）
+1. ユーザーは、入室時に設定する表示名、作業内容、アイコンカラー等の情報を、自らの責任において適切に管理するものとします。
+2. 本サービスは、学習や作業の集中を目的としたコミュニティです。選択したエリアの趣旨に沿った利用を心がけるものとします。
+
+第3条（禁止事項）
+ユーザーは、以下の行為を行ってはなりません。
+1. 法令または公序良俗に違反する行為。
+2. 他のユーザーに対する嫌がらせ、誹謗中傷、または不快感を与える行為。
+3. 広告、宣伝、勧誘、または営業活動（運営者が許可したものを除く）。
+4. チャットや音声機能を悪用し、個人情報を収集したり、わいせつな内容を送信したりする行為。
+5. サーバーやネットワークの機能を破壊したり、妨害したりする行為。
+6. その他、運営者が不適切と判断する行為。
+
+第4条（サービスの提供の停止等）
+運営者は、以下の場合、事前通知なく本サービスの全部または一部の提供を停止または中断できます。
+1. システムの保守点検または更新を行う場合。
+2. 不可抗力により、本サービスの提供が困難となった場合。
+3. その他、運営者が提供困難と判断した場合。
+
+第5条（免責事項）
+1. 運営者は、ユーザー間または第三者との間において生じた取引、連絡または紛争等について一切責任を負いません。
+2. ユーザー自身の環境の不具合により本サービスが利用できない場合について、運営者は責任を負いません。
+
+第6条（著作権・知的財産権）
+本サービスに関するコンテンツの著作権は、運営者または正当な権利者に帰属します。
+
+第7条（利用規約の変更）
+運営者は、必要と判断した場合、ユーザーに通知することなく本規約を変更できます。変更後の規約は、本サービス上に表示された時点より効力を生じます。
+
+第8条（準拠法・裁判管轄）
+1. 本規約の解釈にあたっては、日本法を準拠法とします。
+2. 紛争が生じた場合には、運営者の所在地を管轄する裁判所を専属的合意管轄とします。`;
+
+const PRIVACY=`Seaheya / シーヘヤ！ プライバシーポリシー
+
+1. 取得する個人情報
+・ユーザー名、作業内容等の入力情報
+・入室履歴、チャットログ等の利用履歴
+・IPアドレス、ブラウザ種類、アクセス日時等の技術的情報
+
+2. 情報の利用目的
+・本サービスの提供・運営のため
+・ユーザー同士の円滑なコミュニケーションのため
+・サービスの維持、改善、新機能の開発のため
+・不正利用の防止および利用規約違反への対応のため
+・ユーザーからの問い合わせ対応のため
+
+3. 情報の管理と保護
+本サービスは、ユーザーの情報を適切に管理し、不正アクセス、紛失、破壊、改ざんおよび漏洩の防止に努めます。
+
+4. 第三者への提供
+以下の場合を除き、ユーザーの同意なく個人情報を第三者に提供しません。
+・法令に基づき公的機関から開示を求められた場合
+・人の生命・身体・財産の保護のために必要な場合
+・サービス運営の一部を外部に委託する場合
+
+5. 情報の開示・訂正・削除
+アカウントの削除（退室）により、登録情報の消去を求めることができます。
+
+6. Cookieの利用
+本サービスでは、利便性向上のためCookieを使用することがあります。
+
+7. プライバシーポリシーの変更
+本ポリシーは、随時変更することができます。変更後は本サービス上に掲載した時点から効力を生じます。
+
+8. お問い合わせ
+本ポリシーに関するお問い合わせは、本サービス内の問い合わせフォームまたは運営者が指定する方法にてご連絡ください。`;
+
+function showLegalDoc(title,body){
+  const old=$('legalDlg');if(old)old.remove();
+  const ov=document.createElement('div');ov.className='overlay';ov.id='legalDlg';
+  ov.innerHTML=`<div class="dlg" style="width:min(560px,92vw);max-height:80vh;display:flex;flex-direction:column;padding:0;overflow:hidden;">
+    <div style="padding:20px 24px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+      <span style="font-size:14px;font-weight:600;color:var(--ac);">${title}</span>
+      <button onclick="$('legalDlg').remove()" style="background:none;border:none;cursor:pointer;color:var(--tx3);font-size:20px;padding:2px 6px;">✕</button>
+    </div>
+    <div style="overflow-y:auto;padding:20px 24px;white-space:pre-wrap;font-size:12px;line-height:1.8;color:var(--tx2);">${esc(body)}</div>
+  </div>`;
+  document.body.appendChild(ov);
+}
+function showTerms(){toggleMenu();showLegalDoc(S.lang==='ja'?'利用規約':'Terms of Service',TERMS);}
+function showPrivacy(){toggleMenu();showLegalDoc(S.lang==='ja'?'プライバシーポリシー':'Privacy Policy',PRIVACY);}
+
 function toggleMode(){
   S.mode=S.mode==='light'?'dark':'light';
   document.documentElement.classList.toggle('dark',S.mode==='dark');
@@ -1764,14 +2139,35 @@ window.addEventListener('resize',()=>{
 /* =============================================
    離脱時クリーンアップ
 ============================================= */
-window.addEventListener('beforeunload',()=>{
+// ブラウザを閉じた/タブを閉じた時の退出処理
+function emergencyLeave(){
   if(!S.myId)return;
-  fetch(`${SUPA_URL}/rest/v1/users?id=eq.${S.myId}`,{
+  const id=S.myId;
+  // keepalive:trueでページ閉じ後も送信を試みる
+  fetch(`${SUPA_URL}/rest/v1/users?id=eq.${id}`,{
     method:'DELETE',
     headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY},
     keepalive:true
   });
+  // ゾーンのカウントも下げる
+  if(S.myZone){
+    fetch(`${SUPA_URL}/rest/v1/zones?id=eq.${S.myZone}`,{
+      method:'PATCH',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({current:Math.max(0,(S.zones[S.myZone]?.current||1)-1)}),
+      keepalive:true
+    });
+  }
+}
+window.addEventListener('beforeunload',emergencyLeave);
+// タブが非アクティブ→アクティブに戻ったときにhb更新
+document.addEventListener('visibilitychange',()=>{
+  if(!document.hidden&&S.myId){
+    dbUpd('users',{last_seen:new Date().toISOString()},{id:S.myId});
+  }
 });
+// pagehideはiOS Safariで確実に発火
+window.addEventListener('pagehide',emergencyLeave);
 
 // Turnstileコールバック
 function onTurnstileSuccess(token){
