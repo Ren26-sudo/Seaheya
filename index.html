@@ -1350,14 +1350,32 @@ async function initPeer(){
   try{
     S.stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
     S.stream.getAudioTracks().forEach(t=>t.enabled=false);
+    // 安定したシグナリングサーバーとSTUNサーバーを明示指定
     S.peer=new Peer(undefined,{
+      host:'0.peerjs.com',
+      port:443,
+      path:'/',
+      secure:true,
+      debug:1,
       config:{
         iceServers:[
           {urls:'stun:stun.l.google.com:19302'},
           {urls:'stun:stun1.l.google.com:19302'},
-          {urls:'stun:stun2.l.google.com:19302'},
+          {urls:'stun:global.stun.twilio.com:3478'},
+          // TURN サーバー（NAT越えが困難な場合のフォールバック）
+          {
+            urls:'turn:openrelay.metered.ca:80',
+            username:'openrelayproject',
+            credential:'openrelayproject'
+          },
+          {
+            urls:'turn:openrelay.metered.ca:443',
+            username:'openrelayproject',
+            credential:'openrelayproject'
+          },
         ],
         iceCandidatePoolSize:10,
+        iceTransportPolicy:'all',
       }
     });
     S.peer.on('open',pid=>{S.myPeerId=pid;dbUpd('users',{peer_id:pid},{id:S.myId});});
