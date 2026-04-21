@@ -940,6 +940,11 @@ function onName(){
 
 async function joinRoom(){
   if(!S.myName)return;
+  // レート制限：30秒間に3回まで
+  if(!rateLimit('join',3,30000)){
+    rlDeny('入室操作が多すぎます。しばらく待ってください。','Too many join attempts. Please wait.');
+    return;
+  }
   // Turnstileトークン確認
   const token=S._turnstileToken;
   if(!token){
@@ -998,6 +1003,11 @@ function renderBooths(){
 
 async function clickBooth(num){
   if(!S.myId)return;
+  // レート制限：5秒間に2回まで
+  if(!rateLimit('zone',2,5000)){
+    rlDeny('移動が速すぎます。少し待ってください。','Moving too fast. Please wait.');
+    return;
+  }
   const zid=`silent-${num}`;
   // 二重クリック防止
   if(S._boothLock)return;
@@ -1077,6 +1087,11 @@ function renderRooms(){
 
 async function clickRoom(roomId){
   if(!S.myId||S._roomLock)return;
+  // レート制限：5秒間に2回まで（boothと共通）
+  if(!rateLimit('zone',2,5000)){
+    rlDeny('移動が速すぎます。少し待ってください。','Moving too fast. Please wait.');
+    return;
+  }
   const r=ROOMS.find(x=>x.id===roomId);if(!r)return;
   S._roomLock=true;
   try{
@@ -1162,6 +1177,11 @@ function renderFtAvs(){
 
 async function clickFt(){
   if(!S.myId)return;
+  // レート制限：5秒間に2回まで
+  if(!rateLimit('zone',2,5000)){
+    rlDeny('移動が速すぎます。少し待ってください。','Moving too fast. Please wait.');
+    return;
+  }
   if(S.myZone==='freetalk'){leaveZone();return;}
   const z=S.zones['freetalk']||{current:0,capacity:30};
   if(z.current>=30){setStatus(t('zone-full'));return;}
@@ -1358,6 +1378,11 @@ function handleStream(call,uid){
    マイク
 ============================================= */
 async function toggleMic(){
+  if(!S.myId)return;
+  if(!rateLimit('mic',3,3000)){
+    rlDeny('操作が速すぎます。少し待ってください。','Too fast. Please wait.');
+    return;
+  }
   S.isMuted=!S.isMuted;updateMic();
   if(S.stream)S.stream.getAudioTracks().forEach(t=>t.enabled=!S.isMuted);
   await dbUpd('users',{is_muted:S.isMuted},{id:S.myId});
@@ -1401,6 +1426,11 @@ function cpKeydown(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendCh
 function cpResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,80)+'px';}
 async function sendChat(){
   if(!S.myId)return;
+  // レート制限：10秒間に5件まで
+  if(!rateLimit('chat',5,10000)){
+    rlDeny('送信が速すぎます。少し待ってください。','Sending too fast. Please wait.');
+    return;
+  }
   const inp=$('cpInp');const body=inp.value.trim();
   if(!body)return;
   inp.value='';inp.style.height='auto';
@@ -1615,6 +1645,28 @@ function tickClock(){
    ユーティリティ
 ============================================= */
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+/* =============================================
+   レート制限
+   rateLimit(key, limit, windowMs)
+   - key: 操作の識別子
+   - limit: 許可回数
+   - windowMs: 時間窓(ms)
+   戻り値: true=許可 / false=ブロック
+============================================= */
+const _rl={};
+function rateLimit(key,limit,windowMs){
+  const now=Date.now();
+  if(!_rl[key])_rl[key]=[];
+  // 古いタイムスタンプを削除
+  _rl[key]=_rl[key].filter(t=>now-t<windowMs);
+  if(_rl[key].length>=limit)return false;
+  _rl[key].push(now);
+  return true;
+}
+function rlDeny(msgJa,msgEn){
+  setStatus(S.lang==='ja'?msgJa:msgEn,true);
+}
 function toggleLang(){
   S.lang=S.lang==='ja'?'en':'ja';
   $('langBtn').textContent=S.lang==='ja'?'EN':'JP';
