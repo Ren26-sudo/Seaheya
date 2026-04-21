@@ -825,8 +825,12 @@ async function init(){
   renderPreview();
   startRealtime();
   S.dtTmr=setInterval(tickClock,1000);tickClock();
-  S.cleanTmr=setInterval(()=>dbDel('users',{}).then(()=>{}),60000);
-  await db.from('users').delete().lt('last_seen',new Date(Date.now()-2*60*1000).toISOString());
+  // 古いユーザーを定期削除（WHERE句を確実に指定）
+  async function removeStale(){
+    await db.from('users').delete().lt('last_seen',new Date(Date.now()-2*60*1000).toISOString());
+  }
+  S.cleanTmr=setInterval(removeStale,60000);
+  await removeStale();
   applyI18n();
   $('join-screen').style.display='flex';
   $('loading').classList.add('hidden');
@@ -1346,7 +1350,16 @@ async function initPeer(){
   try{
     S.stream=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
     S.stream.getAudioTracks().forEach(t=>t.enabled=false);
-    S.peer=new Peer();
+    S.peer=new Peer(undefined,{
+      config:{
+        iceServers:[
+          {urls:'stun:stun.l.google.com:19302'},
+          {urls:'stun:stun1.l.google.com:19302'},
+          {urls:'stun:stun2.l.google.com:19302'},
+        ],
+        iceCandidatePoolSize:10,
+      }
+    });
     S.peer.on('open',pid=>{S.myPeerId=pid;dbUpd('users',{peer_id:pid},{id:S.myId});});
     S.peer.on('call',call=>{call.answer(S.stream);handleStream(call,call.metadata?.userId);});
     S.peer.on('error',e=>console.error('[Peer]',e));
