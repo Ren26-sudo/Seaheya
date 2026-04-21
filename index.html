@@ -143,7 +143,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 
 /* ===== MAIN ===== */
 /* PCは左右分割、モバイルは縦スクロール */
-.main{flex:1;overflow:hidden;display:flex;position:relative;}
+.main{flex:1;overflow:hidden;display:flex;position:relative;transition:margin-right .28s cubic-bezier(.34,1.1,.64,1);}
 .main-inner{display:flex;width:100%;height:100%;}
 
 /* ===== SILENT AREA ===== */
@@ -1433,7 +1433,20 @@ function updateMic(){
 function toggleChat(){
   S.chatOpen=!S.chatOpen;
   $('chatPanel').classList.toggle('open',S.chatOpen);
-  if(S.chatOpen){renderMsgs();setTimeout(()=>$('cpMsgs').scrollTop=999999,50);}
+  // チャット開閉時にメインエリアを調整
+  const mainEl=$('mainEl');
+  if(mainEl){
+    // PCでチャットが開いているときは右側にmarginを付けてルームが隠れないように
+    if(window.innerWidth>680){
+      mainEl.style.marginRight=S.chatOpen?'var(--chat-w)':'0';
+    }
+  }
+  if(S.chatOpen){
+    renderMsgs();
+    setTimeout(()=>$('cpMsgs').scrollTop=999999,50);
+  }
+  // 席位置の描画を確実に更新
+  setTimeout(()=>renderAll(),50);
 }
 function renderMsgs(){
   const c=$('cpMsgs');if(!c)return;
@@ -1659,6 +1672,11 @@ function chips(id,users){
 }
 function renderAll(){
   renderBooths();renderRooms();renderFtAvs();renderPreview();
+  // チャットが開いているときもmainのmarginを維持
+  const mainEl=$('mainEl');
+  if(mainEl&&window.innerWidth>680){
+    mainEl.style.marginRight=S.chatOpen?'var(--chat-w)':'0';
+  }
 }
 
 /* =============================================
@@ -1733,7 +1751,15 @@ function toggleMode(){
 /* =============================================
    リサイズ
 ============================================= */
-window.addEventListener('resize',()=>{if($('room-screen').style.display!=='none')renderFtAvs();});
+window.addEventListener('resize',()=>{
+  if($('room-screen').style.display!=='none'){
+    renderFtAvs();
+    const mainEl=$('mainEl');
+    if(mainEl){
+      mainEl.style.marginRight=(S.chatOpen&&window.innerWidth>680)?'var(--chat-w)':'0';
+    }
+  }
+});
 
 /* =============================================
    離脱時クリーンアップ
