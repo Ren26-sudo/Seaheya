@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <title>Seaheya / シーヘヤ！</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
@@ -92,20 +92,22 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 }
 .hdr-time{
   display:flex;align-items:baseline;gap:5px;
-  font-family:'Source Code Pro',monospace;flex-shrink:0;
+  font-family:'Noto Sans JP',sans-serif;flex-shrink:0;
+  padding-right:8px; /* 斜線との間隔 */
 }
 .hdr-time .t-date{font-size:13px;color:var(--tx2);}
 .hdr-time .t-hm{font-size:16px;font-weight:500;color:var(--ac);}
 .hdr-time .t-ap{font-size:11px;color:var(--tx3);}
 .hdr-btn{
-  height:var(--hdr);padding:0 14px;flex-shrink:0;
+  height:var(--hdr);padding:0 14px 0 18px;flex-shrink:0;
   background:transparent;border:none;
   color:var(--tx2);font-size:11px;font-family:inherit;
   cursor:pointer;letter-spacing:.06em;transition:all .18s;white-space:nowrap;
   position:relative;
 }
+/* 斜線区切り：左端に配置、テキストとの間隔を確保 */
 .hdr-btn::before{
-  content:'';position:absolute;left:0;top:18%;bottom:18%;
+  content:'';position:absolute;left:4px;top:16%;bottom:16%;
   width:1.5px;
   background:linear-gradient(180deg,transparent,var(--bd2),transparent);
   transform:skewX(-18deg);
@@ -150,9 +152,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 }
 .area-lbl{
   position:absolute;top:10px;left:50%;transform:translateX(-50%);
-  font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--ac);background:var(--sf);padding:4px 14px;
-  border-radius:999px;border:1px solid var(--bd2);
+  font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--ac);
   z-index:5;white-space:nowrap;pointer-events:none;
 }
 .booth-grid{
@@ -173,7 +174,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .booth:hover:not(.occupied){border-color:var(--ac);box-shadow:0 4px 14px rgba(0,95,153,.14);transform:translateY(-1px);}
 .booth.occupied{cursor:default;}
 .booth.mine{background:var(--mine-bg);border-color:var(--mine-bd);cursor:default;}
-.b-num{font-size:10px;color:var(--tx3);font-family:'Source Code Pro',monospace;letter-spacing:.05em;}
+.b-num{font-size:10px;color:var(--tx3);font-family:'JetBrains Mono',monospace;letter-spacing:.05em;}
 .b-user{display:flex;align-items:center;gap:8px;flex:1;}
 .b-av{
   width:30px;height:30px;border-radius:50%;flex-shrink:0;
@@ -201,7 +202,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   background:var(--booth-bg);border:1.5px solid var(--booth-bd);border-radius:12px;
   padding:10px 10px 30px;cursor:pointer;transition:all .18s;
   display:flex;flex-direction:column;gap:5px;position:relative;
-  min-height:110px;
+  min-height:140px;
 }
 .room-card:hover:not(.full):not(.mine){border-color:var(--ac);box-shadow:0 4px 14px rgba(0,95,153,.14);}
 .room-card.full{cursor:default;opacity:.65;}
@@ -215,11 +216,30 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .r-seat.empty{background:transparent;border:1.5px dashed rgba(0,95,153,.2);color:transparent;}
 .r-count{
   position:absolute;bottom:8px;right:10px;
-  font-size:15px;font-weight:700;font-family:'Source Code Pro',monospace;
+  font-size:15px;font-weight:700;font-family:'Noto Sans JP',sans-serif;
   color:var(--ac);opacity:.8;
 }
 .r-count.full{color:var(--ng);}
 .r-leave-hint{position:absolute;top:6px;right:8px;font-size:9px;color:var(--acl);font-weight:600;}
+/* 席ラッパー */
+.r-seat-wrap{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;}
+.r-seat-name{font-size:9px;color:var(--tx3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50px;text-align:center;}
+/* マイクONバッジ */
+.r-seat-mic{
+  position:absolute;top:-3px;right:-3px;
+  width:14px;height:14px;border-radius:50%;
+  background:linear-gradient(135deg,var(--acl),var(--ac));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 4px rgba(0,100,180,.4);
+}
+/* 通話中バッジ */
+.r-seat-call{
+  position:absolute;bottom:-3px;right:-3px;
+  width:10px;height:10px;border-radius:50%;
+  background:var(--ok);
+  box-shadow:0 0 0 2px var(--sf);
+  animation:pulse 1.5s infinite;
+}
 
 /* ===== FREETALK ===== */
 .ft-zone{
@@ -233,9 +253,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .ft-zone.active{background:rgba(0,160,200,.09);cursor:pointer;}
 .ft-lbl{
   position:absolute;top:8px;left:50%;transform:translateX(-50%);
-  font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--acl);background:var(--sf);padding:3px 12px;
-  border-radius:999px;border:1px solid rgba(0,160,200,.3);
+  font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--acl);
   pointer-events:none;white-space:nowrap;z-index:2;
 }
 .ft-table{
@@ -287,8 +306,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .tb-btn.done{animation:doneBlink .6s ease-in-out infinite;}
 .tb-lbl{font-size:12px;letter-spacing:.03em;white-space:nowrap;}
 .tb-timer-lbl{
-  font-family:'Source Code Pro',monospace;
-  font-size:15px;font-weight:600;letter-spacing:.03em;
+  font-family:'Noto Sans JP',sans-serif;
+  font-size:15px;font-weight:700;letter-spacing:.01em;
   white-space:nowrap;
 }
 
@@ -306,7 +325,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .tm-row+.tm-row{border-top:1px solid var(--bd);}
 .tm-btn{
   background:var(--bg2);border:1.5px solid var(--bd2);border-radius:11px;
-  color:var(--tx2);font-family:'Source Code Pro',monospace;font-size:15px;font-weight:600;
+  color:var(--tx2);font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:600;
   padding:10px 22px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:all .15s;
 }
 .tm-btn:hover{background:var(--ac2);color:var(--ac);border-color:var(--ac);}
@@ -320,7 +339,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .tm-close:hover{background:var(--ngbg);color:var(--ng);border-color:var(--ng);}
 .tm-inp{
   width:64px;height:42px;border:1.5px solid var(--bd2);border-radius:10px;
-  background:transparent;color:var(--tx);font-family:'Source Code Pro',monospace;font-size:15px;
+  background:transparent;color:var(--tx);font-family:'JetBrains Mono',monospace;font-size:15px;
   text-align:center;outline:none;transition:border-color .2s;
   -moz-appearance:textfield;flex-shrink:0;
 }
@@ -353,7 +372,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
 .cp-msg-hdr{display:flex;align-items:center;gap:6px;margin-bottom:2px;}
 .cp-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 .cp-uname{font-size:11px;font-weight:600;color:var(--tx2);}
-.cp-time{font-size:10px;color:var(--tx3);font-family:'Source Code Pro',monospace;}
+.cp-time{font-size:10px;color:var(--tx3);font-family:'JetBrains Mono',monospace;}
 .cp-body{font-size:13px;color:var(--tx);line-height:1.5;padding-left:16px;}
 .cp-mine .cp-body{color:var(--ac);}
 .cp-input-row{
@@ -425,6 +444,32 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--tx);
   display:flex;align-items:center;justify-content:center;
   z-index:9000;backdrop-filter:blur(6px);animation:fadeUp .2s ease;
 }
+/* 送信中オーバーレイ（薄い・インタラクション可） */
+.req-sending-ov{
+  position:fixed;inset:0;
+  display:flex;align-items:flex-end;justify-content:center;
+  z-index:500;padding-bottom:calc(var(--tb) + var(--cp) + 12px);
+  pointer-events:none;
+}
+.req-sending-card{
+  background:var(--sf);border:1.5px solid var(--bd2);border-radius:14px;
+  padding:14px 20px;
+  box-shadow:0 4px 20px rgba(0,80,130,.18);
+  display:flex;flex-direction:column;gap:10px;
+  min-width:260px;max-width:340px;
+  pointer-events:auto;
+  animation:fadeUp .25s ease;
+}
+.rsc-title{font-size:13px;font-weight:600;color:var(--ac);letter-spacing:.04em;}
+.rsc-sub{font-size:12px;color:var(--tx2);line-height:1.6;}
+.rsc-bar-wrap{width:100%;height:3px;background:var(--bd2);border-radius:2px;overflow:hidden;}
+.rsc-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--acl),var(--ac));transition:width .8s linear;}
+.rsc-cancel{
+  background:transparent;border:1.5px solid var(--bd2);border-radius:8px;
+  color:var(--tx2);font-size:12px;font-family:inherit;padding:6px 14px;cursor:pointer;
+  align-self:flex-end;transition:all .15s;
+}
+.rsc-cancel:hover{background:var(--ngbg);color:var(--ng);border-color:var(--ng);}
 .dlg{
   background:var(--sf);border-radius:18px;
   box-shadow:0 20px 60px rgba(0,60,120,.22);border:1px solid var(--bd2);
@@ -681,7 +726,7 @@ const I18N={
     'welcome':'作業部屋へようこそ','welcome-sub':'名前を入力して入室してください',
     'your-name':'あなたの名前','task-lbl':'作業内容（任意）','icon-color':'アイコンカラー','enter':'入室する',
     'current-status':'現在の入室状況','working-now':'人が作業中','nobody':'現在誰もいません',
-    'silent-area':'Silent Area','audio-area':'Audio Area','freetalk-zone':'Free Talk Zone',
+    'silent-area':'サイレントエリア','audio-area':'オーディオエリア','freetalk-zone':'フリートークゾーン',
     'mic-off':'マイク：オフ','mic-on':'マイク：オン',
     'min-unit':'分','leave':'退出する','night-mode':'Night','day-mode':'Day',
     'leave-title':'退出しますか？','leave-sub':'他のユーザーの画面からもアバターが消えます。',
@@ -738,6 +783,7 @@ const S={
   timerItv:null, timerRem:0, timerPaused:false,
   rtCh:null, rtReconnecting:false, rtRetry:0,
   pendingReq:null, reqTimeout:null,
+  _boothLock:false, _roomLock:false, _sendingBarItv:null,
   chatOpen:false,
   statusLock:0, lastLog:'—',
   cycleRunning:false, cycleTimer:null, countItv:null,
@@ -821,7 +867,14 @@ function onRTStatus(s){
   setTimeout(()=>{S.rtReconnecting=false;startRealtime();},d);
 }
 function onUInsert(u){
-  if(!S.users.find(x=>x.id===u.id))S.users=[...S.users,u];
+  // 既存ユーザーの更新 or 新規追加
+  const exists=S.users.find(x=>x.id===u.id);
+  if(exists){
+    S.users=S.users.map(x=>x.id===u.id?u:x);
+  }else{
+    S.users=[...S.users,u];
+  }
+  // 強制再描画（アイコン未反映の防止）
   renderAll();
   if(S.myId&&u.id!==S.myId&&u.peer_id&&u.zone===S.myZone&&isAudio(S.myZone))callPeer(u.peer_id,u.id);
 }
@@ -837,6 +890,8 @@ function onUUpdate(u,old){
     if(u.join_response&&old?.join_response!==u.join_response)handleJoinResp(u.join_response);
     if(u.pending_request&&old?.pending_request!==u.pending_request)showInReq(u.pending_request);
   }
+  // マイク状態変化も再描画（確実に反映）
+  if(old&&u.is_muted!==old.is_muted)renderAll();
 }
 function onUDelete(id){
   S.users=S.users.filter(u=>u.id!==id);
@@ -844,7 +899,14 @@ function onUDelete(id){
   renderAll();
 }
 function onMsgInsert(m){
-  if(!S.msgs.find(x=>x.id===m.id))S.msgs=[...S.msgs,m];
+  // tempメッセージ（同じuser+content+直近）を置き換え
+  const now=Date.now();
+  const dupIdx=S.msgs.findIndex(x=>x.id.startsWith('tmp_')&&x.user_id===m.user_id&&x.content===m.content&&now-parseInt(x.id.split('_')[1])<10000);
+  if(dupIdx>=0){
+    S.msgs.splice(dupIdx,1,m);
+  }else if(!S.msgs.find(x=>x.id===m.id)){
+    S.msgs=[...S.msgs,m];
+  }
   renderMsgs();
 }
 function isAudio(z){return z&&(z.startsWith('room-')||z==='freetalk');}
@@ -918,16 +980,30 @@ function renderBooths(){
 async function clickBooth(num){
   if(!S.myId)return;
   const zid=`silent-${num}`;
-  const z=S.zones[zid]||{current:0,capacity:1};
-  if(z.current>=z.capacity){setStatus(S.lang==='ja'?`ブース${num}は使用中です`:`Booth ${num} is occupied`);return;}
-  await enterZone(zid);
-  S.statusLock=0;
-  setStatus(S.myName+(S.lang==='ja'?` さんがブース${num}に入りました`:` entered Booth ${num}`));
-  saveLog('enter_booth',zid);
-  if(!S.isMuted){
-    S.isMuted=true;updateMic();
-    if(S.stream)S.stream.getAudioTracks().forEach(t=>t.enabled=false);
-    await dbUpd('users',{is_muted:true},{id:S.myId});
+  // 二重クリック防止
+  if(S._boothLock)return;
+  S._boothLock=true;
+  try{
+    // ★ DBから最新状態を取得して競合防止
+    const fresh=await dbSel('users',{zone:zid});
+    if(fresh.length>0){
+      setStatus(S.lang==='ja'?`ブース${num}は使用中です`:`Booth ${num} is occupied`);
+      // ローカルも更新
+      S.zones[zid]={...S.zones[zid],current:fresh.length};
+      renderBooths();
+      return;
+    }
+    await enterZone(zid);
+    S.statusLock=0;
+    setStatus(S.myName+(S.lang==='ja'?` さんがブース${num}に入りました`:` entered Booth ${num}`));
+    saveLog('enter_booth',zid);
+    if(!S.isMuted){
+      S.isMuted=true;updateMic();
+      if(S.stream)S.stream.getAudioTracks().forEach(t=>t.enabled=false);
+      await dbUpd('users',{is_muted:true},{id:S.myId});
+    }
+  }finally{
+    S._boothLock=false;
   }
 }
 
@@ -949,9 +1025,25 @@ function renderRooms(){
       const o=occs.find(u=>(u.seat_index||0)===i);
       if(o){
         const ring=o.id===S.myId?`box-shadow:0 0 0 2px #fff,0 0 0 4px ${o.color};`:'';
-        seats+=`<div class="r-seat" style="width:28px;height:28px;background:${o.color};${ring}">${o.name[0].toUpperCase()}</div>`;
+        const inCall=!!S.calls[o.id];
+        // マイク状態バッジ
+        const micBadge=!o.is_muted
+          ?`<div class="r-seat-mic" title="${S.lang==='ja'?'マイクON':'Mic ON'}">
+              <svg width="7" height="7" viewBox="0 0 18 18" fill="none" stroke="#fff" stroke-width="2.2">
+                <rect x="5.5" y="1" width="7" height="10" rx="3.5"/>
+                <path d="M2 9a7 7 0 0014 0"/>
+              </svg>
+            </div>`:'';
+        // 通話中バッジ
+        const callBadge=inCall
+          ?`<div class="r-seat-call"></div>`:'';
+        seats+=`<div class="r-seat-wrap">
+          <div class="r-seat" style="width:44px;height:44px;font-size:16px;background:${o.color};${ring}${inCall?'outline:2px solid var(--ok);outline-offset:1px;':''}">${o.name[0].toUpperCase()}</div>
+          <div class="r-seat-name">${o.name}</div>
+          ${micBadge}${callBadge}
+        </div>`;
       }else{
-        seats+=`<div class="r-seat empty" style="width:28px;height:28px;"></div>`;
+        seats+=`<div class="r-seat-wrap"><div class="r-seat empty" style="width:44px;height:44px;"></div></div>`;
       }
     }
     d.innerHTML=`
@@ -965,18 +1057,27 @@ function renderRooms(){
 }
 
 async function clickRoom(roomId){
-  if(!S.myId)return;
+  if(!S.myId||S._roomLock)return;
   const r=ROOMS.find(x=>x.id===roomId);if(!r)return;
-  const z=S.zones[roomId]||{current:0,capacity:r.capacity};
-  if(z.current>=r.capacity){setStatus(t('zone-full')+': '+r.label);return;}
-  const occs=S.users.filter(u=>u.zone===roomId);
-  if(occs.length===0){
-    await enterZone(roomId,0);
-    S.statusLock=0;
-    setStatus(S.myName+(S.lang==='ja'?` さんが ${r.label} に入りました`:` joined ${r.label}`));
-    saveLog('join_room',roomId);
-  }else{
-    sendReq(roomId,occs[0]);
+  S._roomLock=true;
+  try{
+    // DBから最新状態取得
+    const fresh=await dbSel('users',{zone:roomId});
+    if(fresh.length>=r.capacity){
+      setStatus(t('zone-full')+': '+r.label);
+      S.zones[roomId]={...S.zones[roomId],current:fresh.length};
+      renderRooms();return;
+    }
+    if(fresh.length===0){
+      await enterZone(roomId,0);
+      S.statusLock=0;
+      setStatus(S.myName+(S.lang==='ja'?` さんが ${r.label} に入りました`:` joined ${r.label}`));
+      saveLog('join_room',roomId);
+    }else{
+      sendReq(roomId,fresh[0]);
+    }
+  }finally{
+    S._roomLock=false;
   }
 }
 
@@ -996,19 +1097,39 @@ function renderFtAvs(){
   const avs=$('ftAvs');const zone=$('ftZone');const tbl=$('ftTable');
   if(!avs||!zone||!tbl)return;
   const users=S.users.filter(u=>u.zone==='freetalk');
-  const W=zone.offsetWidth||300,H=zone.offsetHeight||180;
-  const tr=Math.min(W,H)*0.26;
-  tbl.style.cssText=`width:${Math.round(W*0.52)}px;height:${Math.round(tr*1.4)}px;`;
+  const W=zone.offsetWidth||300,H=zone.offsetHeight||200;
+  // テーブルサイズ
+  const tw=Math.round(W*0.48),th=Math.round(H*0.38);
+  tbl.style.cssText=`width:${tw}px;height:${th}px;`;
+  // ラベル高さ分だけ中心をずらす（ラベルとアイコンが重ならないように）
+  const lblH=36; // ft-lblの高さ+余白
+  const cx=W/2,cy=(H+lblH)/2; // 中心を下にずらす
   avs.innerHTML='';
-  const n=users.length;if(!n)return;
-  users.forEach((u,i)=>{
-    const a=(i/n)*2*Math.PI-Math.PI/2;
-    const r=tr+36;
-    const cx=W/2+r*Math.cos(a),cy=H/2+(r*0.72)*Math.sin(a);
+  const n=users.length;if(!n){$('ftZone').classList.toggle('active',S.myZone==='freetalk');return;}
+  const gap=42;
+  const seats=[];
+  // 上段（最大4席）：テーブル上辺の中央揃え（ラベルと重ならないよう余白確保）
+  const topY=cy-th/2-34;
+  const topCount=Math.min(n,4);
+  const topStartX=cx-(topCount-1)*gap/2;
+  for(let i=0;i<4;i++)seats.push({x:topStartX+i*gap,y:topY,row:'top'});
+  // 下段（最大5席）：テーブル下辺の中央揃え
+  const botY=cy+th/2+32;
+  const botCount=Math.min(Math.max(n-4,0),5);
+  const botStartX=cx-(Math.min(botCount||1,5)-1)*gap/2;
+  for(let i=0;i<5;i++)seats.push({x:botStartX+i*gap,y:botY,row:'bot'});
+  // 左側（最大3席）：テーブル左辺
+  const leftX=cx-tw/2-38;
+  const leftCount=Math.min(Math.max(n-9,0),3);
+  const leftStartY=cy-(Math.min(leftCount||1,3)-1)*gap/2;
+  for(let i=0;i<3;i++)seats.push({x:leftX,y:leftStartY+i*gap,row:'left'});
+
+  users.slice(0,12).forEach((u,i)=>{
+    const seat=seats[i]||{x:cx,y:cy};
     const isMe=u.id===S.myId;
     const d=document.createElement('div');
     d.className='ft-av';
-    d.style.cssText=`left:${cx}px;top:${cy}px;`;
+    d.style.cssText=`left:${seat.x}px;top:${seat.y}px;`;
     d.innerHTML=`
       <div class="ft-avc" style="background:${u.color};${isMe?`box-shadow:0 0 0 2.5px #fff,0 0 0 4.5px ${u.color};`:''}">
         ${u.name[0].toUpperCase()}
@@ -1037,26 +1158,35 @@ async function clickFt(){
 ============================================= */
 async function enterZone(zoneId,seatIdx=null){
   const old=S.myZone;
+  // ★ ローカルを即時更新（ラグなし）
+  S.myZone=zoneId;
+  S.users=S.users.map(u=>u.id===S.myId?{...u,zone:zoneId,seat_index:seatIdx}:u);
+  // ローカルのzonesも先に更新
+  if(old&&S.zones[old])S.zones[old]={...S.zones[old],current:Math.max(0,(S.zones[old].current||1)-1)};
+  if(zoneId&&S.zones[zoneId])S.zones[zoneId]={...S.zones[zoneId],current:(S.zones[zoneId].current||0)+1};
+  renderAll(); // 即時描画
+  // 通話クリーンアップ
+  if(old&&isAudio(old)){Object.entries(S.calls).forEach(([,c])=>{try{c.close();}catch(e){}});S.calls={};}
+  // DB更新（バックグラウンド・並列）
+  const updates=[];
   if(old){
     const oz=S.zones[old];
-    if(oz)await dbUpd('zones',{current:Math.max(0,oz.current-1)},{id:old});
-    if(isAudio(old)){Object.entries(S.calls).forEach(([,c])=>{try{c.close();}catch(e){}});S.calls={};}
+    if(oz)updates.push(dbUpd('zones',{current:Math.max(0,oz.current)},{id:old}));
   }
-  S.myZone=zoneId;
   if(zoneId){
-    await loadZones();
-    const z=S.zones[zoneId]||{current:0};
-    await dbUpd('zones',{current:z.current+1},{id:zoneId});
-    await dbUpd('users',{zone:zoneId,seat_index:seatIdx,last_seen:new Date().toISOString()},{id:S.myId});
-    S.users=S.users.map(u=>u.id===S.myId?{...u,zone:zoneId,seat_index:seatIdx}:u);
-    if(isAudio(zoneId)){
-      S.users.filter(u=>u.zone===zoneId&&u.id!==S.myId&&u.peer_id&&!u.is_muted).forEach(u=>callPeer(u.peer_id,u.id));
-    }
+    const z=S.zones[zoneId];
+    if(z)updates.push(dbUpd('zones',{current:z.current},{id:zoneId}));
+    updates.push(dbUpd('users',{zone:zoneId,seat_index:seatIdx,last_seen:new Date().toISOString()},{id:S.myId}));
   }else{
-    await dbUpd('users',{zone:null,seat_index:null,last_seen:new Date().toISOString()},{id:S.myId});
-    S.users=S.users.map(u=>u.id===S.myId?{...u,zone:null,seat_index:null}:u);
+    updates.push(dbUpd('users',{zone:null,seat_index:null,last_seen:new Date().toISOString()},{id:S.myId}));
   }
-  await loadZones();renderAll();
+  await Promise.all(updates);
+  // DB確定後に音声接続
+  if(zoneId&&isAudio(zoneId)){
+    await loadZones();
+    S.users.filter(u=>u.zone===zoneId&&u.id!==S.myId&&u.peer_id&&!u.is_muted).forEach(u=>callPeer(u.peer_id,u.id));
+  }
+  renderAll();
 }
 
 /* =============================================
@@ -1065,14 +1195,56 @@ async function enterZone(zoneId,seatIdx=null){
 async function sendReq(roomId,host){
   if(S.pendingReq)return;
   S.pendingReq={roomId,hostId:host.id};
-  setStatus(t('req-sent'));
+  setStatus(t('req-sent'),true);
+  const rname=ROOMS.find(r=>r.id===roomId)?.label||roomId;
+  // 送信中オーバーレイを表示
+  showSendingOv(rname,host);
   const req={from:S.myId,name:S.myName,color:S.myColor,roomId,ts:Date.now()};
   await dbUpd('users',{pending_request:JSON.stringify(req)},{id:host.id});
   S.reqTimeout=setTimeout(async()=>{
     S.pendingReq=null;
-    setStatus(S.lang==='ja'?'リクエストがタイムアウトしました':'Request timed out');
+    hideSendingOv();
+    setStatus(S.lang==='ja'?'リクエストがタイムアウトしました':'Request timed out',true);
     await dbUpd('users',{pending_request:null},{id:host.id});
   },30000);
+}
+
+function showSendingOv(roomName,host){
+  hideSendingOv();
+  const ov=document.createElement('div');
+  ov.className='req-sending-ov';ov.id='sendingOv';
+  ov.innerHTML=`<div class="req-sending-card">
+    <div class="rsc-title">${S.lang==='ja'?'入室リクエスト送信中':'Sending Join Request'}</div>
+    <div class="rsc-sub">
+      <span style="color:${host.color};font-weight:600">${esc(host.name)}</span>
+      ${S.lang==='ja'?` さんに ${roomName} への入室をリクエストしています`:`<br>Requesting to join ${roomName}`}
+      <br>${S.lang==='ja'?'承認を待っています（30秒）':'Waiting for approval (30s)'}
+    </div>
+    <div class="rsc-bar-wrap"><div class="rsc-bar" id="sendingBar" style="width:100%"></div></div>
+    <button class="rsc-cancel" onclick="cancelReq()">${S.lang==='ja'?'キャンセル':'Cancel'}</button>
+  </div>`;
+  document.body.appendChild(ov);
+  // バーのカウントダウン
+  let w=100;
+  S._sendingBarItv=setInterval(()=>{
+    w-=100/30;
+    const b=$('sendingBar');if(b)b.style.width=Math.max(0,w)+'%';
+  },1000);
+}
+
+function hideSendingOv(){
+  const ov=$('sendingOv');if(ov)ov.remove();
+  if(S._sendingBarItv){clearInterval(S._sendingBarItv);S._sendingBarItv=null;}
+}
+
+async function cancelReq(){
+  if(!S.pendingReq)return;
+  const {hostId}=S.pendingReq;
+  S.pendingReq=null;
+  if(S.reqTimeout){clearTimeout(S.reqTimeout);S.reqTimeout=null;}
+  hideSendingOv();
+  await dbUpd('users',{pending_request:null},{id:hostId});
+  setStatus(S.lang==='ja'?'リクエストをキャンセルしました':'Request cancelled',true);
 }
 function showInReq(json){
   if(!json)return;
@@ -1107,20 +1279,23 @@ async function respondReq(fromId,resp,roomId){
 async function handleJoinResp(resp){
   if(S.reqTimeout){clearTimeout(S.reqTimeout);S.reqTimeout=null;}
   S.pendingReq=null;
+  hideSendingOv();
   if(resp.startsWith('allow')){
     const roomId=resp.split(':')[1];
     if(roomId){
       const r=ROOMS.find(x=>x.id===roomId);
+      // 承認ログ
+      setStatus(S.lang==='ja'?`入室リクエストが承認されました`:`Join request approved`,true);
+      await new Promise(res=>setTimeout(res,800)); // 少し表示してから移動
       const used=new Set(S.users.filter(u=>u.zone===roomId).map(u=>u.seat_index||0));
       const cap=r?.capacity||4;
       let seat=0;for(let i=0;i<cap;i++){if(!used.has(i)){seat=i;break;}}
       await enterZone(roomId,seat);
-      S.statusLock=0;
-      setStatus(S.myName+(S.lang==='ja'?` さんが ${r?.label} に入りました`:` joined ${r?.label}`));
+      setStatus(S.myName+(S.lang==='ja'?` さんが ${r?.label} に入りました`:` joined ${r?.label}`),true);
       saveLog('join_room',roomId);
     }
   }else{
-    setStatus(t('req-denied'));
+    setStatus(S.lang==='ja'?'入室リクエストが拒否されました':'Join request denied',true);
   }
   await dbUpd('users',{join_response:null},{id:S.myId});
 }
@@ -1148,7 +1323,10 @@ function handleStream(call,uid){
   call.on('stream',rs=>{
     let a=document.getElementById('aud_'+uid);
     if(!a){a=document.createElement('audio');a.id='aud_'+uid;a.autoplay=true;document.body.appendChild(a);}
-    a.srcObject=rs;S.calls[uid]=call;setStatus(t('call-connected'));
+    a.srcObject=rs;S.calls[uid]=call;
+    const caller=S.users.find(u=>u.id===uid);
+    const callerName=caller?.name||uid;
+    setStatus(S.lang==='ja'?`${callerName} さんと通話しています`:`In call with ${callerName}`,true);
   });
   call.on('close',()=>{
     const a=document.getElementById('aud_'+uid);if(a)a.remove();
@@ -1164,8 +1342,7 @@ async function toggleMic(){
   S.isMuted=!S.isMuted;updateMic();
   if(S.stream)S.stream.getAudioTracks().forEach(t=>t.enabled=!S.isMuted);
   await dbUpd('users',{is_muted:S.isMuted},{id:S.myId});
-  S.statusLock=0;
-  setStatus(S.lang==='ja'?(S.isMuted?'マイクをオフにしました':'マイクをオンにしました'):(S.isMuted?'Microphone off':'Microphone on'));
+  setStatus(S.lang==='ja'?(S.isMuted?'マイクをオフにしました':'マイクをオンにしました'):(S.isMuted?'Microphone off':'Microphone on'),true);
 }
 function updateMic(){
   const btn=$('micBtn'),icon=$('micIcon'),lbl=$('micLbl');if(!btn)return;
@@ -1208,7 +1385,22 @@ async function sendChat(){
   const inp=$('cpInp');const body=inp.value.trim();
   if(!body)return;
   inp.value='';inp.style.height='auto';
-  await dbIns('messages',{user_id:S.myId,user_name:S.myName,user_color:S.myColor,content:body});
+  // 楽観的UI：送信前にローカルで即座に表示
+  const tempId='tmp_'+Date.now();
+  const tempMsg={id:tempId,user_id:S.myId,user_name:S.myName,user_color:S.myColor,
+    content:body,created_at:new Date().toISOString()};
+  S.msgs=[...S.msgs,tempMsg];
+  renderMsgs();
+  try{
+    await dbIns('messages',{user_id:S.myId,user_name:S.myName,user_color:S.myColor,content:body});
+    // Realtimeで本物が届いたらtempを削除
+    S.msgs=S.msgs.filter(m=>m.id!==tempId);
+  }catch(e){
+    // 失敗したらtempを削除してエラー表示
+    S.msgs=S.msgs.filter(m=>m.id!==tempId);
+    renderMsgs();
+    setStatus(S.lang==='ja'?'送信に失敗しました':'Failed to send');
+  }
 }
 
 /* =============================================
@@ -1258,7 +1450,7 @@ function updateTimerBtn(){
   const mins=Math.floor(S.timerRem/60),secs=String(S.timerRem%60).padStart(2,'0');
   lbl.textContent=`${mins}:${secs}`;
   lbl.style.color=S.timerRem<=10?'var(--ng)':'var(--ac)';
-  lbl.style.fontFamily="'Source Code Pro',monospace";
+  lbl.style.fontFamily="'JetBrains Mono',monospace";
   lbl.style.fontWeight='700';
   lbl.style.fontSize='15px';
 }
@@ -1286,8 +1478,9 @@ function playBeep(){
 /* =============================================
    ステータス表示
 ============================================= */
-function setStatus(msg){
-  if(S.statusLock>Date.now())return;
+// priority=true のときはロックを無視して表示
+function setStatus(msg,priority=false){
+  if(!priority&&S.statusLock>Date.now())return;
   S.lastLog=msg;
   S.statusLock=Date.now()+4000;
   applyTxt(msg);
@@ -1347,6 +1540,7 @@ async function doLeave(){
   clearInterval(S.stayTmr);clearInterval(S.hbTmr);
   S.cycleRunning=false;clearInterval(S.countItv);clearTimeout(S.cycleTimer);
   resetTimer();
+  hideSendingOv();
   if(S.myZone)await enterZone(null);
   Object.values(S.calls).forEach(c=>{try{c.close();}catch(e){}});
   if(S.peer){try{S.peer.destroy();}catch(e){}S.peer=null;}
@@ -1404,7 +1598,14 @@ function toggleLang(){
   applyI18n();tickClock();
 }
 function applyI18n(){
-  document.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=t(e.dataset.i18n));
+  document.querySelectorAll('[data-i18n]').forEach(e=>{
+    e.textContent=t(e.dataset.i18n);
+    // エリアラベルは日本語時にtext-transform:noneに
+    if(e.classList.contains('area-lbl')||e.classList.contains('ft-lbl')){
+      e.style.textTransform=S.lang==='ja'?'none':'uppercase';
+      e.style.letterSpacing=S.lang==='ja'?'.05em':'.12em';
+    }
+  });
   if(S.myId)updateMic();
   $('modeBtn').textContent=t(S.mode==='light'?'night-mode':'day-mode');
   const ct=$('cpTitle');if(ct)ct.textContent=S.lang==='ja'?'サイレントエリア全体チャット':'Silent Area Global Chat';
