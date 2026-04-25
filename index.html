@@ -9,7 +9,6 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -585,7 +584,6 @@ body{font-family:"Noto Sans JP",sans-serif;background:var(--bg);color:var(--tx);
           <span class="agree-link" onclick="showPrivacy()">プライバシーポリシー</span>に同意します
         </label>
       </div>
-      <div class="cf-turnstile" id="regTurnstile" data-sitekey="0x4AAAAAADAe9noxL2ezNOc2" data-callback="onRegTurnstile" data-expired-callback="onRegTurnstileExpired" data-theme="light" style="margin-bottom:12px;"></div>
       <button class="auth-btn" id="regBtn" disabled onclick="doRegister()">登録する</button>
       <div class="auth-links">
         <button class="auth-link" onclick="navigate('login')">すでにアカウントをお持ちの方</button>
@@ -1053,7 +1051,7 @@ async function doRegister(){
   if(now<new Date(now.getFullYear(),birth.getMonth(),birth.getDate()))age--;
   if(age<13){showAuthAlert('regAlert','Seaheyaのご利用は13歳以上の方に限られています');return;}
   if(!agreed){showAuthAlert('regAlert','利用規約とプライバシーポリシーへの同意が必要です');return;}
-  if(!S._regTurnstile){showAuthAlert('regAlert','認証を完了してください');return;}
+  // Turnstile disabled in dev
   // ニックネーム重複チェック
   const{data:existing}=await db.from('profiles').select('id').eq('nickname',nick).maybeSingle();
   if(existing){showAuthAlert('regAlert','このニックネームはすでに使用されています');return;}
@@ -1127,8 +1125,7 @@ function updateRegBtn(){
   const nick=$('nickHint')?.className.includes('ok');
   const pw=validatePw($('regPw')?.value||'');
   const agreed=$('agreeTos')?.checked;
-  const turnstile=!!S._regTurnstile;
-  btn.disabled=!(nick&&pw&&agreed&&turnstile);
+  btn.disabled=!(nick&&pw&&agreed);
 }
 function onRegTurnstile(token){S._regTurnstile=token;updateRegBtn();}
 function onRegTurnstileExpired(){S._regTurnstile=null;updateRegBtn();}
@@ -1336,10 +1333,9 @@ function showGuestDialog(){
       <div class="field-lbl">アイコンカラー</div>
       <div class="color-row-auth" id="guestColorRow"></div>
     </div>
-    <div class="cf-turnstile" data-sitekey="0x4AAAAAADAe9noxL2ezNOc2" data-callback="onGuestTurnstile" data-theme="${S.mode}" style="margin-bottom:14px;"></div>
     <div style="display:flex;gap:10px;">
       <button class="dlg-btn cancel" onclick="$('guestDlg').remove()">キャンセル</button>
-      <button class="dlg-btn allow" id="guestEnterBtn" disabled onclick="submitGuestEnter()">入室する</button>
+      <button class="dlg-btn allow" id="guestEnterBtn" onclick="submitGuestEnter()">入室する</button>
     </div>
   </div>`;
   document.body.appendChild(ov);
@@ -1354,7 +1350,7 @@ function showGuestDialog(){
   });
   S._guestColor=COLORS[0];S._guestTurnstile=null;
 }
-function onGuestTurnstile(token){S._guestTurnstile=token;const b=$('guestEnterBtn');if(b)b.disabled=false;}
+function onGuestTurnstile(token){S._guestTurnstile=token;}
 async function submitGuestEnter(){
   const name=$('guestName')?.value.trim();
   if(!name){return;}
