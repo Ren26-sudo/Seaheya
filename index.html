@@ -850,7 +850,7 @@ const S={
   timerItv:null,timerRem:0,timerPaused:false,
   rtCh:null,rtReconnecting:false,rtRetry:0,
   pendingReq:null,reqTimeout:null,
-  _boothLock:false,_roomLock:false,_sendingBarItv:null,_msgTimer:null,
+  _boothLock:false,_roomLock:false,_sendingBarItv:null,_msgTimer:null,_joiningRoom:false,
   chatOpen:false,chatTab:'global',unreadCount:0,
   statusLock:0,lastLog:'—',
   cycleRunning:false,cycleTimer:null,countItv:null,
@@ -883,7 +883,7 @@ function navigate(name){
   updateMenuForScreen(name);
   if(name==='mypage'){setTimeout(async()=>{if(!S.profile&&S.session)await loadProfile(S.session.user.id);mpNav('profile');setTimeout(renderMpColors,80);},80);}
   if(name==='admin'){if(!S.profile?.is_admin&&S.session?.user?.email!==ADMIN_EMAIL){navigate('room');return;}setTimeout(()=>adminNav('dashboard'),50);}
-  if(name==='room'&&S.session&&!S.myId){setTimeout(()=>joinMemberRoom(),100);}
+  if(name==='room'&&S.session&&!S.myId&&!S._joiningRoom){S._joiningRoom=true;setTimeout(()=>{S._joiningRoom=false;if(!S.myId)joinMemberRoom();},150);}
   // guest: entrypoint via showGuestDialog() from landing
 }
 function updateMenuForScreen(name){
@@ -1029,7 +1029,6 @@ async function doLogin(){
   }
   if(btn){btn.disabled=false;btn.textContent='ログイン';}
   navigate('room');
-  setTimeout(()=>joinMemberRoom(),300);
 }
 
 async function doRegister(){
@@ -1210,12 +1209,13 @@ function startRealtime(){
     .subscribe(onRTStatus);
 }
 function onRTStatus(s){
-  console.log('[RT]',s);
   if(s==='SUBSCRIBED'){S.rtReconnecting=false;S.rtRetry=0;return;}
+  // CHANNEL_ERRORのみ再接続（CLOSEDは正常終了なので無視）
+  if(s!=='CHANNEL_ERROR'&&s!=='TIMED_OUT')return;
   if(S.rtReconnecting)return;
   S.rtReconnecting=true;S.rtRetry++;
-  const d=Math.min(2000*Math.pow(1.5,S.rtRetry-1),30000);
-  setTimeout(()=>{S.rtReconnecting=false;startRealtime();},d);
+  const d=Math.min(3000*Math.pow(1.5,S.rtRetry-1),30000);
+  setTimeout(()=>{S.rtReconnecting=false;if(S.myId||S.gMyId)startRealtime();},d);
 }
 function onUInsert(u){
   if(S.isGuest){renderGuestBooths();return;}
@@ -2120,6 +2120,11 @@ async function adminNav(tab){
   ['dashboard','users','logs'].forEach(t=>{
     const el=$('adminNav-'+t);if(el)el.classList.toggle('active',t===tab);
   });
+  // 管理者画面用: 最新usersを取得してからrender
+  if(tab==='dashboard'){
+    const{data}=await db.from('users').select('*');
+    if(data)S.users=data;
+  }
   await renderAdminContent(tab);
 }
 async function renderAdminContent(tab){
