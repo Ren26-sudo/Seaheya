@@ -881,7 +881,7 @@ function navigate(name){
   });
   history.pushState({screen:name},'',(name==='landing')?'/':'/'+name);
   updateMenuForScreen(name);
-  if(name==='mypage'){setTimeout(()=>{mpNav('profile');renderMpColors();},50);}
+  if(name==='mypage'){setTimeout(async()=>{if(!S.profile&&S.session)await loadProfile(S.session.user.id);mpNav('profile');setTimeout(renderMpColors,80);},80);}
   if(name==='admin'){if(!S.profile?.is_admin&&S.session?.user?.email!==ADMIN_EMAIL){navigate('room');return;}setTimeout(()=>adminNav('dashboard'),50);}
   if(name==='room'&&S.session&&!S.myId){setTimeout(()=>joinMemberRoom(),100);}
   // guest: entrypoint via showGuestDialog() from landing
@@ -913,14 +913,14 @@ async function init(){
     await loadProfile(session.user.id);
   }
   // URLからページを判定
-  const path=location.pathname.replace('/','');
+  // パスの取得（先頭と末尾の/を除去）
+  const path=location.pathname.replace(/^\/+|\/+$/g,'');
   const validScreens=['login','register','reset','room','guest','mypage','admin'];
   let initScreen='landing';
   if(validScreens.includes(path)){
-    // 認証が必要なページのチェック
     if((path==='room'||path==='mypage'||path==='admin')&&!session){
       initScreen='login';
-    }else if(path==='admin'&&!S.profile?.is_admin){
+    }else if(path==='admin'&&session?.user?.email!==ADMIN_EMAIL&&!S.profile?.is_admin){
       initScreen='room';
     }else{
       initScreen=path;
@@ -937,8 +937,36 @@ async function init(){
   db.auth.onAuthStateChange(async(event,session)=>{
     S.session=session;
     if(event==='SIGNED_IN'&&session){
+      // pending_profile があればprofileを作成（メール認証完了後の初回ログイン）
+      const pending=localStorage.getItem('pending_profile');
+      if(pending){
+        try{
+          const p=JSON.parse(pending);
+          // profilesが存在しない場合のみ作成
+          const{data:existing}=await db.from('profiles').select('id').eq('id',session.user.id).maybeSingle();
+          if(!existing){
+            const{error:pe}=await db.from('profiles').insert({
+              id:session.user.id,
+              nickname:p.nickname,
+              full_name:p.full_name||null,
+              birth_date:p.birth_date,
+              color:p.color||'#005f99',
+            });
+            if(!pe){
+              await db.from('user_stats').upsert({user_id:session.user.id});
+              console.log('[profile created]');
+            }else{
+              console.error('[profile insert error]',pe.message);
+            }
+          }
+          localStorage.removeItem('pending_profile');
+        }catch(e){console.error('[pending_profile error]',e);}
+      }
       await loadProfile(session.user.id);
       updateMenuForScreen(location.pathname.replace('/',''));
+      // マイページが表示中なら再描画
+      const cur=document.querySelector('.screen.active');
+      if(cur?.id==='screen-mypage')mpNav('profile');
     }else if(event==='SIGNED_OUT'){
       S.profile=null;
       updateMenuForScreen('landing');
@@ -1041,14 +1069,9 @@ async function doRegister(){
     if(btn){btn.disabled=false;btn.textContent='登録する';}
     return;
   }
-  // profilesテーブルに挿入
-  if(data.user){
-    await db.from('profiles').upsert({
-      id:data.user.id,nickname:nick,full_name:name||null,
-      birth_date:birthStr,color:S.myColor||COLORS[0],
-    });
-    await db.from('user_stats').upsert({user_id:data.user.id});
-  }
+  // 登録データをlocalStorageに一時保存（メール認証後にprofile作成するため）
+  const pendingProfile={nickname:nick,full_name:name||null,birth_date:birthStr,color:S.myColor||COLORS[0]};
+  localStorage.setItem('pending_profile',JSON.stringify(pendingProfile));
   if(btn){btn.disabled=false;btn.textContent='登録する';}
   showAuthSuccess('regSuccess','確認メールを送信しました。メール内のリンクをクリックして登録を完了してください。');
 }
