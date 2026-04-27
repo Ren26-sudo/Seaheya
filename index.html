@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
 <meta name="theme-color" content="#0a1628">
 <meta name="description" content="一人じゃないから、集中できる。オンライン作業部屋 Seaheya">
-<meta property="og:title" content="Seaheya / シーヘヤ！">
+<meta property="og:title" content="Seaheya">
 <meta property="og:description" content="一人じゃないから、集中できる。オンライン作業部屋">
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌊</text></svg>">
-<title>Seaheya / シーヘヤ！</title>
+<title>Seaheya</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -197,81 +197,58 @@ button{font-family:inherit;cursor:pointer}
 ============================================================ */
 .landing-root{
   flex:1;position:relative;overflow:hidden;
-  background:linear-gradient(160deg,#0a1628 0%,#0d2a4a 40%,#0a3a5a 70%,#0d4a6a 100%);
+  background:linear-gradient(180deg,#0a1628 0%,#0d2a4a 35%,#0a3a5a 65%,#0d4a6a 100%);
 }
-.landing-canvas{position:absolute;inset:0;z-index:0}
 .landing-body{
   position:relative;z-index:1;
   height:100%;overflow-y:auto;
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
-  padding:40px 20px;gap:36px;
+  padding:40px 20px;gap:32px;
 }
-.landing-hero{text-align:center}
+.landing-hero{text-align:center;margin-bottom:4px;}
 .landing-logo{
-  font-size:48px;font-weight:700;letter-spacing:.02em;margin-bottom:12px;
-  background:linear-gradient(135deg,#fff 0%,#7dd3fc 50%,#38bdf8 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  background-clip:text;background-size:200% auto;
-  animation:shimmer 5s linear infinite;
+  font-size:52px;font-weight:700;letter-spacing:-.01em;margin-bottom:10px;
+  color:#fff;
 }
 .landing-tagline{
-  font-size:18px;font-weight:300;color:rgba(255,255,255,.75);
-  line-height:1.9;margin-bottom:10px;letter-spacing:.04em;
+  font-size:14px;font-weight:400;color:rgba(255,255,255,.45);
+  letter-spacing:.18em;text-transform:uppercase;margin-bottom:0;
 }
-.landing-sub{font-size:13px;color:rgba(255,255,255,.4);letter-spacing:.06em}
 .landing-btns{
-  display:flex;flex-direction:column;gap:12px;
-  width:100%;max-width:300px;margin:0 auto;
+  display:flex;flex-direction:column;gap:9px;
+  width:100%;max-width:280px;margin:0 auto;
 }
 .land-btn{
-  width:100%;padding:15px 24px;border-radius:var(--radius);
-  font-size:14px;font-weight:600;letter-spacing:.04em;
-  border:none;transition:all .22s;
-  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:14px 24px;border-radius:var(--radius-sm);
+  font-size:13px;font-weight:500;letter-spacing:.06em;
+  border:none;transition:all .2s;cursor:pointer;
 }
 .land-btn.primary{
-  background:linear-gradient(135deg,#0066cc,#0099ee);
-  color:#fff;box-shadow:0 4px 20px rgba(0,100,220,.4);
+  background:#fff;color:#0a1628;
 }
-.land-btn.primary:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,100,220,.5)}
+.land-btn.primary:hover{background:rgba(255,255,255,.88);}
 .land-btn.outline{
-  background:rgba(255,255,255,.08);
-  border:1.5px solid rgba(255,255,255,.2);
-  color:rgba(255,255,255,.85);
-  backdrop-filter:blur(8px);
-}
-.land-btn.outline:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.35)}
-.land-btn.ghost{
   background:transparent;
-  border:1.5px dashed rgba(255,255,255,.2);
-  color:rgba(255,255,255,.5);font-size:13px;padding:12px;
+  border:1px solid rgba(255,255,255,.3);
+  color:rgba(255,255,255,.8);
 }
-.land-btn.ghost:hover{border-color:rgba(255,255,255,.4);color:rgba(255,255,255,.75)}
+.land-btn.outline:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.5)}
+.land-btn.ghost{
+  background:transparent;border:none;
+  color:rgba(255,255,255,.35);font-size:12px;padding:10px;
+  text-decoration:underline;text-underline-offset:3px;
+}
+.land-btn.ghost:hover{color:rgba(255,255,255,.6)}
 .landing-stats{
-  display:flex;gap:36px;justify-content:center;
-  padding:20px 32px;border-radius:var(--radius);
-  background:rgba(255,255,255,.06);
-  backdrop-filter:blur(10px);
-  border:1px solid rgba(255,255,255,.1);
+  display:flex;gap:40px;justify-content:center;
 }
 .ls-item{text-align:center}
 .ls-num{
-  font-size:32px;font-weight:700;color:#fff;
+  font-size:28px;font-weight:300;color:rgba(255,255,255,.9);
   font-family:'Noto Sans JP',sans-serif;line-height:1;
 }
-.ls-lbl{font-size:10px;color:rgba(255,255,255,.4);margin-top:5px;letter-spacing:.1em}
-.landing-features{
-  display:flex;flex-wrap:wrap;gap:10px;
-  justify-content:center;max-width:420px;margin:0 auto;
-}
-.lf-chip{
-  display:flex;align-items:center;gap:6px;
-  font-size:11px;color:rgba(255,255,255,.55);
-  background:rgba(255,255,255,.06);
-  padding:5px 12px;border-radius:999px;
-  border:1px solid rgba(255,255,255,.1);
-}
+.ls-lbl{font-size:10px;color:rgba(255,255,255,.35);margin-top:6px;letter-spacing:.12em}
 
 /* ============================================================
    AUTH SCREENS
@@ -1161,7 +1138,7 @@ button{font-family:inherit;cursor:pointer}
 </style>
 <body>
 <div id="loading">
-  <div class="ld-logo">Seaheya / シーヘヤ！</div>
+  <div class="ld-logo">Seaheya</div>
   <div class="ld-waves"><span></span><span></span><span></span><span></span><span></span></div>
   <div class="ld-sub">読み込み中… / LOADING</div>
 </div>
@@ -1169,13 +1146,13 @@ button{font-family:inherit;cursor:pointer}
 
 <!-- HEADER -->
 <header class="hdr">
-  <a class="hdr-logo" href="/" onclick="navigate('landing');return false">Seaheya / シーヘヤ！</a>
+  <a class="hdr-logo" href="/" onclick="navigate('landing');return false">Seaheya</a>
+  <div class="hdr-spacer"></div>
   <div class="hdr-time">
     <span class="t-date" id="dtDate"></span>
     <span class="t-hm" id="dtHm">--:--</span>
     <span class="t-ap" id="dtAp">AM</span>
   </div>
-  <div class="hdr-spacer"></div>
   <button class="hdr-btn" id="langBtn" onclick="toggleLang()">EN</button>
   <button class="hdr-btn" id="modeBtn" onclick="toggleMode()">Night</button>
   <button class="hdr-btn" id="menuBtn" onclick="toggleMenu()">
@@ -1217,34 +1194,19 @@ button{font-family:inherit;cursor:pointer}
 <!-- LANDING -->
 <div class="screen" id="screen-landing">
   <div class="landing-root">
-    <canvas class="landing-canvas" id="waveCanvas"></canvas>
     <div class="landing-body">
       <div class="landing-hero">
         <div class="landing-logo">Seaheya</div>
-        <p class="landing-tagline">一人じゃないから、集中できる。<br>オンライン作業部屋へようこそ。</p>
-        <p class="landing-sub">/ シーヘヤ！</p>
+        <p class="landing-tagline">オンライン作業部屋</p>
       </div>
       <div class="landing-btns">
-        <button class="land-btn primary" onclick="navigate('login')">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="1" y="1" width="9" height="14" rx="1.5"/><path d="M6 5l4 3-4 3M5 8h9"/></svg>
-          ログインして入室
-        </button>
-        <button class="land-btn outline" onclick="navigate('register')">
-          <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="5" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
-          新規登録（無料）
-        </button>
-        <button class="land-btn ghost" onclick="showGuestDialog()">ゲストとして入室（登録不要）</button>
+        <button class="land-btn primary" onclick="navigate('login')">ログイン</button>
+        <button class="land-btn outline" onclick="navigate('register')">新規登録（無料）</button>
+        <button class="land-btn ghost" onclick="showGuestDialog()">ゲストとして入室</button>
       </div>
       <div class="landing-stats">
         <div class="ls-item"><div class="ls-num" id="ldOnline">0</div><div class="ls-lbl">現在の在室</div></div>
         <div class="ls-item"><div class="ls-num" id="ldMembers">0</div><div class="ls-lbl">登録ユーザー</div></div>
-      </div>
-      <div class="landing-features">
-        <div class="lf-chip"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#7dd3fc" stroke-width="1.8"><path d="M2 6l3 3 5-5"/></svg>サイレント作業</div>
-        <div class="lf-chip"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#7dd3fc" stroke-width="1.8"><path d="M2 6l3 3 5-5"/></svg>音声通話</div>
-        <div class="lf-chip"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#7dd3fc" stroke-width="1.8"><path d="M2 6l3 3 5-5"/></svg>作業統計</div>
-        <div class="lf-chip"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#7dd3fc" stroke-width="1.8"><path d="M2 6l3 3 5-5"/></svg>フレンド機能</div>
-        <div class="lf-chip"><svg width="11" height="11" viewBox="0 0 12 12" fill="none" stroke="#7dd3fc" stroke-width="1.8"><path d="M2 6l3 3 5-5"/></svg>プライバシーモード</div>
       </div>
     </div>
   </div>
@@ -1254,7 +1216,7 @@ button{font-family:inherit;cursor:pointer}
 <div class="screen" id="screen-login">
   <div class="auth-root">
     <div class="auth-card">
-      <div class="auth-brand">Seaheya / シーヘヤ！</div>
+      <div class="auth-brand">Seaheya</div>
       <div class="auth-sub">オンライン作業部屋</div>
       <div class="auth-title">ログイン</div>
       <div class="auth-alert" id="loginAlert"></div>
@@ -1288,7 +1250,7 @@ button{font-family:inherit;cursor:pointer}
 <div class="screen" id="screen-register">
   <div class="auth-root">
     <div class="auth-card">
-      <div class="auth-brand">Seaheya / シーヘヤ！</div>
+      <div class="auth-brand">Seaheya</div>
       <div class="auth-sub">新規アカウント登録</div>
       <div class="auth-alert" id="regAlert"></div>
       <div class="auth-ok" id="regOk"></div>
@@ -1354,7 +1316,7 @@ button{font-family:inherit;cursor:pointer}
 <div class="screen" id="screen-reset">
   <div class="auth-root">
     <div class="auth-card">
-      <div class="auth-brand">Seaheya / シーヘヤ！</div>
+      <div class="auth-brand">Seaheya</div>
       <div class="auth-title">パスワードをリセット</div>
       <div class="auth-alert" id="resetAlert"></div>
       <div class="auth-ok" id="resetOk"></div>
@@ -1765,51 +1727,8 @@ function updateMenuState(name){
 }
 window.addEventListener('popstate',e=>navigate(e.state?.screen||'landing'));
 
-/* ============================================================
-   WAVE ANIMATION
-============================================================ */
-let _waveId=null, _waveT=0;
-const _waves=[
-  {amp:.030,freq:.010,spd:.013,phase:0,   alpha:.16,rgb:'0,102,204'},
-  {amp:.025,freq:.007,spd:.010,phase:2.1, alpha:.12,rgb:'0,153,238'},
-  {amp:.020,freq:.013,spd:.016,phase:4.2, alpha:.09,rgb:'58,171,255'},
-  {amp:.035,freq:.006,spd:.008,phase:1.0, alpha:.07,rgb:'0,80,160'},
-];
-function startWave(){
-  if(_waveId)return;
-  const cv=$('waveCanvas');if(!cv)return;
-  const ctx=cv.getContext('2d');
-  function resize(){
-    const p=cv.parentElement;
-    cv.width=p?.offsetWidth||window.innerWidth;
-    cv.height=p?.offsetHeight||window.innerHeight;
-  }
-  resize();
-  window.addEventListener('resize',resize);
-  function tick(){
-    if(!$('screen-landing')?.classList.contains('active')){_waveId=null;return;}
-    const W=cv.width,H=cv.height;
-    ctx.clearRect(0,0,W,H);
-    _waveT++;
-    _waves.forEach(w=>{
-      ctx.beginPath();
-      const baseY=H*(0.52+w.amp*2);
-      ctx.moveTo(0,H);
-      for(let x=0;x<=W;x+=3){
-        const y=baseY
-          +Math.sin(x*w.freq+_waveT*w.spd*80+w.phase)*H*w.amp
-          +Math.sin(x*w.freq*1.8+_waveT*w.spd*55+w.phase*1.4)*H*w.amp*.35;
-        ctx.lineTo(x,y);
-      }
-      ctx.lineTo(W,H);ctx.closePath();
-      ctx.fillStyle=`rgba(${w.rgb},${w.alpha})`;
-      ctx.fill();
-    });
-    _waveId=requestAnimationFrame(tick);
-  }
-  tick();
-}
-function stopWave(){if(_waveId){cancelAnimationFrame(_waveId);_waveId=null;}}
+function startWave(){}
+function stopWave(){}
 
 /* ============================================================
    INIT
@@ -3428,7 +3347,7 @@ function updateMenuBtns(){
 /* ============================================================
    LEGAL
 ============================================================ */
-const TERMS=`Seaheya / シーヘヤ！ 利用規約
+const TERMS=`Seaheya 利用規約
 
 第1条（適用）
 本規約は、Seaheya（以下「本サービス」）の利用条件を定めます。
@@ -3449,7 +3368,7 @@ const TERMS=`Seaheya / シーヘヤ！ 利用規約
 第5条（準拠法）
 本規約の解釈は日本法を準拠法とします。`;
 
-const PRIVACY=`Seaheya / シーヘヤ！ プライバシーポリシー
+const PRIVACY=`Seaheya プライバシーポリシー
 
 1. 取得する情報
 ・メールアドレス・ニックネーム・生年月日等の登録情報
